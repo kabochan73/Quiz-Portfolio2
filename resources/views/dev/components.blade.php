@@ -144,6 +144,31 @@
             <p class="text-xs text-zinc-500">↑ :padding="false" にして、中に行を並べる使い方(セクション一覧など)</p>
         </section>
 
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">点数バッジ・前回比 <code class="text-sm font-normal text-zinc-500">&lt;x-ui.score-badge / score-delta&gt;</code></h2>
+
+            <div>
+                <p class="mb-2 text-sm text-zinc-500">点数の境目(苦手の基準点: {{ config('quiz.weak_threshold') }}点)</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach ([100, 80, 79, 60, 59, 0, null] as $score)
+                        <x-ui.score-badge :score="$score" />
+                    @endforeach
+                </div>
+            </div>
+
+            <div>
+                <p class="mb-2 text-sm text-zinc-500">大きいサイズ(lg)と前回比</p>
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    @foreach ([[82, 70], [45, 52], [72, 72], [64, null]] as [$current, $previous])
+                        <div class="flex items-center gap-2">
+                            <x-ui.score-badge :score="$current" size="lg" />
+                            <x-ui.score-delta :current="$current" :previous="$previous" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
         @php
             // エラー表示の見本を出すため、この見本ページでだけ、架空のエラーをビューに共有する
             // (本来はバリデーション失敗時に Laravel が自動で共有するもの)。
