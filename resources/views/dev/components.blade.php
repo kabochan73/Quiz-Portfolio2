@@ -197,6 +197,35 @@
         </section>
 
         <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">空の状態 <code class="text-sm font-normal text-zinc-500">&lt;x-ui.empty-state&gt;</code></h2>
+
+            <x-ui.empty-state icon="document-text" title="まだ問題がありません" description="最初の問題を追加しましょう。">
+                <x-slot:action><x-ui.button href="#">+ 問題を追加</x-ui.button></x-slot:action>
+            </x-ui.empty-state>
+
+            <x-ui.empty-state icon="clock" title="まだ挑戦していません" />
+            <p class="text-xs text-zinc-500">↑ 説明とボタンを省略した形</p>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">スケルトン <code class="text-sm font-normal text-zinc-500">&lt;x-ui.skeleton&gt;</code></h2>
+            <p class="text-sm text-zinc-500">採点待ち画面(screens.md 2.10 (a))で、結果カードの形を先に見せる例</p>
+
+            <div class="space-y-3">
+                @foreach ([1, 2] as $i)
+                    <x-ui.card class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <x-ui.skeleton class="h-4 w-24" />
+                            <x-ui.skeleton class="h-6 w-12 rounded-full" />
+                        </div>
+                        <x-ui.skeleton class="h-4 w-full" />
+                        <x-ui.skeleton class="h-4 w-2/3" />
+                    </x-ui.card>
+                @endforeach
+            </div>
+        </section>
+
+        <section class="space-y-4">
             <h2 class="text-lg font-semibold text-zinc-900">点数バッジ・前回比 <code class="text-sm font-normal text-zinc-500">&lt;x-ui.score-badge / score-delta&gt;</code></h2>
 
             <div>
