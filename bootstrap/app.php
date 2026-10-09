@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // ログイン済みでログイン画面を開いたときの移動先。
+        // 既定の「/」はログイン画面へリダイレクトするので、そのままだとリダイレクトが繰り返されてしまう
+        $middleware->redirectUsersTo(fn () => route('categories.index'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
