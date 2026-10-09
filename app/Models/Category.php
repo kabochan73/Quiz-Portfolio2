@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * 分類だけを表すモデル。問題は直接持たず、必ずセクションを通して問題につながる
@@ -21,5 +22,13 @@ class Category extends Model
     public function sections(): HasMany
     {
         return $this->hasMany(Section::class);
+    }
+
+    /**
+     * セクションを通した、このカテゴリの全問題。一覧での問題数の集計や、削除時の件数表示に使う。
+     */
+    public function questions(): HasManyThrough
+    {
+        return $this->hasManyThrough(Question::class, Section::class);
     }
 }

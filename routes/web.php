@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 // アプリの起点はログイン画面(requirements.md 6章)
@@ -17,8 +18,8 @@ Route::middleware('auth')->group(function () {
     // リンクを踏まされただけでログアウトさせられないよう、POST だけを受け付ける
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    // ログイン後の着地点。本物のカテゴリ一覧は implementation-plan.md 4-1 で作る
-    Route::view('/categories', 'categories.index')->name('categories.index');
+    // カテゴリ。一覧はログイン後の着地点(詳細・編集・削除は implementation-plan.md 4-1 の続きで追加する)
+    Route::resource('categories', CategoryController::class)->only(['index', 'create', 'store']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。
