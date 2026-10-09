@@ -33,12 +33,25 @@ class CategoryController extends Controller
 
     public function store(StoreCategoryRequest $request): RedirectResponse
     {
-        Category::create($request->validated());
+        $category = Category::create($request->validated());
 
-        // screens.md 3章では作成後にカテゴリ詳細へ移るが、詳細画面はまだないので一覧へ戻す
-        // (implementation-plan.md 4-1 の詳細画面を作るときに変更する)
+        // screens.md 3章: 作成後は、そのままセクションを追加できるようカテゴリ詳細へ移る
         return redirect()
-            ->route('categories.index')
+            ->route('categories.show', $category)
             ->with('toast', ['type' => 'success', 'message' => 'カテゴリを作成しました']);
+    }
+
+    /**
+     * カテゴリ詳細(screens.md 2.4)。中のセクションを作成順に、問題数と一緒に並べる。
+     * 平均点・最終挑戦日は implementation-plan.md 6-4 で追加する。
+     */
+    public function show(Category $category): View
+    {
+        $sections = $category->sections()
+            ->withCount('questions')
+            ->orderBy('id')
+            ->get();
+
+        return view('categories.show', compact('category', 'sections'));
     }
 }

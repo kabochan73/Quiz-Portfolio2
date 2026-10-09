@@ -16,10 +16,10 @@
             </x-slot:action>
         </x-ui.empty-state>
     @else
-        {{-- カード全体をカテゴリ詳細へのリンクにするのは、詳細画面を作るとき(implementation-plan.md 4-1) --}}
+        {{-- カード全体がカテゴリ詳細へのリンク --}}
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach ($categories as $category)
-                <x-ui.card>
+                <x-ui.card href="{{ route('categories.show', $category) }}">
                     <p class="truncate text-base font-medium text-zinc-900">{{ $category->name }}</p>
                     <p class="mt-1 text-xs text-zinc-500">{{ $category->sections_count }}セクション・{{ $category->questions_count }}問</p>
                 </x-ui.card>

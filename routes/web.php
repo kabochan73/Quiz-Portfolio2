@@ -18,8 +18,8 @@ Route::middleware('auth')->group(function () {
     // リンクを踏まされただけでログアウトさせられないよう、POST だけを受け付ける
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    // カテゴリ。一覧はログイン後の着地点(詳細・編集・削除は implementation-plan.md 4-1 の続きで追加する)
-    Route::resource('categories', CategoryController::class)->only(['index', 'create', 'store']);
+    // カテゴリ。一覧はログイン後の着地点(編集・削除は implementation-plan.md 4-1 の続きで追加する)
+    Route::resource('categories', CategoryController::class)->only(['index', 'create', 'store', 'show']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。

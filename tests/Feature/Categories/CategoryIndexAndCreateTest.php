@@ -43,12 +43,19 @@ it('カテゴリ作成画面を表示できる', function () {
         ->assertSee('作成する');
 });
 
-it('カテゴリを作成すると一覧へ戻り、トーストで知らせる', function () {
-    $this->post('/categories', ['name' => '英語'])
-        ->assertRedirect('/categories')
-        ->assertSessionHas('toast', ['type' => 'success', 'message' => 'カテゴリを作成しました']);
+it('カテゴリを作成するとその詳細へ移り、トーストで知らせる', function () {
+    $response = $this->post('/categories', ['name' => '英語']);
 
-    expect(Category::sole()->name)->toBe('英語');
+    $category = Category::sole();
+    expect($category->name)->toBe('英語');
+    $response->assertRedirect(route('categories.show', $category))
+        ->assertSessionHas('toast', ['type' => 'success', 'message' => 'カテゴリを作成しました']);
+});
+
+it('カテゴリのカードは詳細へのリンクになる', function () {
+    $category = Category::factory()->create();
+
+    $this->get('/categories')->assertSee('href="'.route('categories.show', $category).'"', false);
 });
 
 it('カテゴリ名が空・101文字以上なら作成できず、「カテゴリ名」としてエラーを伝える', function (?string $name, string $message) {
