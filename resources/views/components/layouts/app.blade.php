@@ -3,16 +3,21 @@
     - PC(lg 以上): 左に幅 256px のサイドバーを固定し、メイン領域だけをスクロールさせる
     - スマホ: 上部に ☰ とアプリ名のヘッダーを固定し、☰ でサイドバーをドロワーとして出す
     - narrow を付けると本文の最大幅を 640px にする(作成・編集フォーム用、design-guide.md 4.2)
+    - breadcrumbs を渡すと本文の一番上にパンくずを出す。どのページでも同じ位置に出るよう、レイアウトで表示する
 
     サイドバーのカテゴリ一覧は、ビューに共有された $sidebarCategories から受け取る
     (実データの共有は implementation-plan.md 4-4 で View Composer を使って行う)。
 
     例: <x-layouts.app title="カテゴリ"> ... </x-layouts.app>
-        <x-layouts.app title="カテゴリを作成" narrow> ... </x-layouts.app>
+        <x-layouts.app title="カテゴリを作成" narrow :breadcrumbs="[
+            ['label' => 'カテゴリ', 'href' => route('categories.index')],
+            ['label' => '新規作成'],
+        ]"> ... </x-layouts.app>
 --}}
 @props([
     'title' => null,
     'narrow' => false,
+    'breadcrumbs' => [],
 ])
 
 <!DOCTYPE html>
@@ -62,6 +67,10 @@
 
     <div class="lg:pl-64">
         <main @class(['mx-auto px-4 py-6 lg:px-8 lg:py-10', 'max-w-2xl' => $narrow, 'max-w-3xl' => ! $narrow])>
+            @if (count($breadcrumbs) > 0)
+                <x-ui.breadcrumb :items="$breadcrumbs" class="mb-4" />
+            @endif
+
             {{ $slot }}
         </main>
     </div>

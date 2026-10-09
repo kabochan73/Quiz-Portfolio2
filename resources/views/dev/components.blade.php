@@ -50,12 +50,20 @@
         ['name' => 'セクションのないカテゴリ', 'href' => '#', 'current' => false, 'sections' => []],
     ]);
 @endphp
-<x-layouts.app title="コンポーネント見本">
+<x-layouts.app title="コンポーネント見本" :breadcrumbs="[
+    ['label' => 'カテゴリ', 'href' => '#'],
+    ['label' => '基本情報', 'href' => '#'],
+    ['label' => 'コンポーネント見本'],
+]">
+    <x-ui.page-header title="コンポーネント見本">
+        <x-slot:meta>開発用(ローカル環境のみ)・パンくずとこの見出し自体も見本です</x-slot:meta>
+        <x-slot:actions>
+            <x-ui.button variant="secondary">副ボタン</x-ui.button>
+            <x-ui.button>+ 主ボタン</x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
+
     <div class="space-y-12">
-        <header>
-            <p class="text-xs text-zinc-500">開発用(ローカル環境のみ)</p>
-            <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">コンポーネント見本</h1>
-        </header>
 
         <section class="space-y-4">
             <h2 class="text-lg font-semibold text-zinc-900">カラー</h2>
