@@ -144,6 +144,42 @@
             <p class="text-xs text-zinc-500">↑ :padding="false" にして、中に行を並べる使い方(セクション一覧など)</p>
         </section>
 
+        @php
+            // エラー表示の見本を出すため、この見本ページでだけ、架空のエラーをビューに共有する
+            // (本来はバリデーション失敗時に Laravel が自動で共有するもの)。
+            view()->share('errors', (new \Illuminate\Support\ViewErrorBag)->put('default', new \Illuminate\Support\MessageBag([
+                'sample_error_name' => 'カテゴリ名を入力してください。',
+                'sample_error_body' => '問題文は2000文字以内で入力してください。',
+                'sample_error_section' => '1セクションに登録できる問題は10問までです。',
+            ])));
+        @endphp
+
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">フォーム <code class="text-sm font-normal text-zinc-500">&lt;x-ui.input / textarea / select&gt;</code></h2>
+
+            <div class="grid gap-6 sm:grid-cols-2">
+                <x-ui.card class="space-y-5">
+                    <p class="text-sm text-zinc-500">通常</p>
+                    <x-ui.input name="sample_name" label="カテゴリ名" placeholder="例: 基本情報" hint="あとから変更できます" />
+                    <x-ui.textarea name="sample_body" label="問題文" :maxlength="100" rows="4"
+                        value="TCPとUDPの違いを説明してください。" />
+                    <x-ui.select name="sample_section" label="所属セクション" placeholder="選択してください"
+                        :options="[1 => 'ネットワーク(8問)', 2 => 'データベース(10問・上限)', 3 => 'セキュリティ(6問)']"
+                        :disabled="[2]" />
+                </x-ui.card>
+
+                <x-ui.card class="space-y-5">
+                    <p class="text-sm text-zinc-500">エラー</p>
+                    <x-ui.input name="sample_error_name" label="カテゴリ名" />
+                    <x-ui.textarea name="sample_error_body" label="問題文" :maxlength="20" rows="4"
+                        value="この文章は上限の20文字を超えているので、文字数が赤く表示されます。" />
+                    <x-ui.select name="sample_error_section" label="所属セクション" :value="2"
+                        :options="[1 => 'ネットワーク(8問)', 2 => 'データベース(10問・上限)']" />
+                </x-ui.card>
+            </div>
+            <p class="text-xs text-zinc-500">文字数は入力すると Alpine でその場で数え直されます。</p>
+        </section>
+
         <section class="space-y-4">
             <h2 class="text-lg font-semibold text-zinc-900">角丸と影</h2>
             <div class="flex flex-wrap items-start gap-4">
