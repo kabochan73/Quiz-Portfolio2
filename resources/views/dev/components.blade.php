@@ -92,6 +92,59 @@
         </section>
 
         <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">ボタン <code class="text-sm font-normal text-zinc-500">&lt;x-ui.button&gt;</code></h2>
+
+            @foreach (['md' => '標準(md)', 'sm' => '小(sm)'] as $size => $label)
+                <div>
+                    <p class="mb-2 text-sm text-zinc-500">{{ $label }}</p>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <x-ui.button :size="$size">全問に回答する</x-ui.button>
+                        <x-ui.button variant="secondary" :size="$size">苦手だけ再挑戦</x-ui.button>
+                        <x-ui.button variant="ghost" :size="$size">履歴を見る</x-ui.button>
+                        <x-ui.button variant="danger" :size="$size">削除する</x-ui.button>
+                    </div>
+                </div>
+            @endforeach
+
+            <div>
+                <p class="mb-2 text-sm text-zinc-500">無効・リンク・幅いっぱい</p>
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <x-ui.button disabled>送信中…</x-ui.button>
+                        <x-ui.button variant="secondary" disabled>苦手だけ再挑戦(0問)</x-ui.button>
+                        <x-ui.button variant="secondary" href="#">リンクのボタン</x-ui.button>
+                    </div>
+                    <x-ui.button type="submit" class="w-full">採点する(8問)</x-ui.button>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">カード <code class="text-sm font-normal text-zinc-500">&lt;x-ui.card&gt;</code></h2>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+                <x-ui.card>
+                    <p class="text-base font-medium text-zinc-900">通常のカード</p>
+                    <p class="mt-1 text-xs text-zinc-500">リンクではない、情報をまとめる入れ物</p>
+                </x-ui.card>
+                <x-ui.card href="#">
+                    <p class="text-base font-medium text-zinc-900">基本情報</p>
+                    <p class="mt-1 text-xs text-zinc-500">3セクション・24問・最終挑戦 10/7</p>
+                </x-ui.card>
+            </div>
+
+            <x-ui.card :padding="false" class="divide-y divide-zinc-200">
+                @foreach (['ネットワーク' => '8問', 'データベース' => '10問', 'セキュリティ' => '6問'] as $name => $count)
+                    <a href="#" class="flex min-h-11 items-center justify-between px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-zinc-50 lg:px-5">
+                        <span class="font-medium text-zinc-900">{{ $name }}</span>
+                        <span class="text-zinc-500">{{ $count }}</span>
+                    </a>
+                @endforeach
+            </x-ui.card>
+            <p class="text-xs text-zinc-500">↑ :padding="false" にして、中に行を並べる使い方(セクション一覧など)</p>
+        </section>
+
+        <section class="space-y-4">
             <h2 class="text-lg font-semibold text-zinc-900">角丸と影</h2>
             <div class="flex flex-wrap items-start gap-4">
                 <div class="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm">ボタン・入力欄(8px)</div>
