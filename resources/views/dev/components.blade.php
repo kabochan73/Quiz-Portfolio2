@@ -49,6 +49,11 @@
         ]],
         ['name' => 'セクションのないカテゴリ', 'href' => '#', 'current' => false, 'sections' => []],
     ]);
+
+    // ?toast=1 で開くと、サーバーから渡すトースト(コントローラの ->with('toast', ...) と同じ経路)を確認できる
+    if (request()->boolean('toast')) {
+        session()->now('toast', ['type' => 'success', 'message' => 'カテゴリを作成しました']);
+    }
 @endphp
 <x-layouts.app title="コンポーネント見本" :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => '#'],
@@ -158,6 +163,18 @@
                 @endforeach
             </x-ui.card>
             <p class="text-xs text-zinc-500">↑ :padding="false" にして、中に行を並べる使い方(セクション一覧など)</p>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">トースト <code class="text-sm font-normal text-zinc-500">$dispatch('toast', ...) / -&gt;with('toast', ...)</code></h2>
+            <div class="flex flex-wrap items-center gap-3">
+                <x-ui.button variant="secondary"
+                    x-on:click="$dispatch('toast', { type: 'success', message: '問題を保存しました' })">成功を出す</x-ui.button>
+                <x-ui.button variant="secondary"
+                    x-on:click="$dispatch('toast', { type: 'error', message: '採点できませんでした' })">エラーを出す</x-ui.button>
+                <x-ui.button variant="ghost" href="?toast=1">サーバーから出す(再読み込み)</x-ui.button>
+            </div>
+            <p class="text-xs text-zinc-500">4秒で自動的に消えます。続けて押すと積み重なります。</p>
         </section>
 
         <section class="space-y-4">

@@ -74,5 +74,9 @@
             {{ $slot }}
         </main>
     </div>
+
+    {{-- 作成・更新・削除の完了通知など。コントローラで ->with('toast', ['type' => ..., 'message' => ...]) を渡す --}}
+    <x-ui.toast-stack :initial="session()->has('toast') ? [session('toast')] : []" />
+
 </body>
 </html>
