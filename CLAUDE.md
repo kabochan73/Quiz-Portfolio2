@@ -27,17 +27,19 @@
 
 ## 開発環境
 
-ローカルに PHP / Composer は不要。Docker で完結させる。
+PHP / Composer はローカルに不要で、Docker で完結させる。CSS / JS のビルド(Vite)だけは手元の Node.js(22 以上)で動かす。
 
 ```sh
 docker compose up -d                       # app / nginx / db / worker を起動
 docker compose exec app composer install
 docker compose exec app php artisan migrate --seed
-docker compose exec app php artisan test   # テスト
+npm install
+npm run dev                                # Vite の開発サーバー(画面の自動再読み込み)
+docker compose exec app php artisan test   # テスト(DB は quiz_testing を使う)
 docker compose exec app ./vendor/bin/pint  # コード整形
 ```
 
-- アプリ: http://localhost:8000
+- アプリ: http://localhost:8000(`npm run dev` を動かしていないときは、先に `npm run build` が必要)
 - `.env` の `GRADING_DRIVER=fake` にすると、Claude API を呼ばずに固定の採点結果を返す(画面の作り込みはこれで行う)
 
 ## 開発ルール
