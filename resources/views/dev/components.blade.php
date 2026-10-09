@@ -1,7 +1,7 @@
 {{--
     共通コンポーネントの見本ページ(implementation-plan.md 2-6、ローカル環境のみ)。
     デザイントークンや部品の見た目を1画面でまとめて確認するためのもの。部品を作るたびにここへ追加する。
-    共通レイアウト(2-3)ができるまでは、単独の HTML として書いておく。
+    アプリ全体のレイアウトの上に載せ、PC / スマホでのサイドバー・ドロワーの動きも一緒に確かめる。
 --}}
 @php
     $brand = ['brand-50', 'brand-100', 'brand-200', 'brand-500', 'brand-600', 'brand-700'];
@@ -32,18 +32,26 @@
         ['role' => 'UIテキスト', 'class' => 'text-sm text-zinc-700', 'sample' => '全問に回答する(8問)'],
         ['role' => '補足', 'class' => 'text-xs text-zinc-500', 'sample' => '10月8日 14:32・8問'],
     ];
+
+    // サイドバーの見本用の仮データ。本番では View Composer が実データを共有する(implementation-plan.md 4-4)
+    view()->share('sidebarCategories', [
+        ['name' => '基本情報', 'href' => '#', 'current' => false, 'open' => true, 'sections' => [
+            ['name' => 'ネットワーク', 'href' => '#', 'current' => true],
+            ['name' => 'データベース', 'href' => '#', 'current' => false],
+            ['name' => 'セキュリティ', 'href' => '#', 'current' => false],
+        ]],
+        ['name' => '英語', 'href' => '#', 'current' => false, 'sections' => [
+            ['name' => '英文法', 'href' => '#', 'current' => false],
+        ]],
+        ['name' => 'Laravel', 'href' => '#', 'current' => false, 'sections' => [
+            ['name' => 'ルーティング', 'href' => '#', 'current' => false],
+            ['name' => 'Eloquent', 'href' => '#', 'current' => false],
+        ]],
+        ['name' => 'セクションのないカテゴリ', 'href' => '#', 'current' => false, 'sections' => []],
+    ]);
 @endphp
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>コンポーネント見本 | Quiz</title>
-    @fonts
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <main class="mx-auto max-w-3xl space-y-12 px-4 py-10 lg:px-8">
+<x-layouts.app title="コンポーネント見本">
+    <div class="space-y-12">
         <header>
             <p class="text-xs text-zinc-500">開発用(ローカル環境のみ)</p>
             <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">コンポーネント見本</h1>
@@ -52,9 +60,9 @@
         <section class="space-y-4">
             <h2 class="text-lg font-semibold text-zinc-900">カラー</h2>
 
-            @foreach (['アクセント(brand)' => $brand, 'ニュートラル(zinc)' => $neutral] as $title => $tokens)
+            @foreach (['アクセント(brand)' => $brand, 'ニュートラル(zinc)' => $neutral] as $groupTitle => $tokens)
                 <div>
-                    <p class="mb-2 text-sm text-zinc-500">{{ $title }}</p>
+                    <p class="mb-2 text-sm text-zinc-500">{{ $groupTitle }}</p>
                     <div class="grid grid-cols-3 gap-3 sm:grid-cols-7">
                         @foreach ($tokens as $token)
                             <div>
@@ -260,6 +268,5 @@
                 <div class="rounded-2xl bg-white p-5 text-sm shadow-xl">モーダル(16px)</div>
             </div>
         </section>
-    </main>
-</body>
-</html>
+    </div>
+</x-layouts.app>
