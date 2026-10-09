@@ -75,9 +75,9 @@
 | id | bigint | PK |
 | section_id | bigint | FK → sections.id, ON DELETE CASCADE |
 | user_id | bigint | FK → users.id, ON DELETE CASCADE |
-| grading_level | varchar(10) | NOT NULL, CHECK (easy / normal / hard) |
-| mode | varchar(10) | NOT NULL, CHECK (all / weak) |
-| status | varchar(10) | NOT NULL, DEFAULT 'pending', CHECK (pending / grading / completed / failed) |
+| grading_level | varchar(255) | NOT NULL, CHECK (easy / normal / hard) |
+| mode | varchar(255) | NOT NULL, CHECK (all / weak) |
+| status | varchar(255) | NOT NULL, DEFAULT 'pending', CHECK (pending / grading / completed / failed) |
 | model | varchar(100) | NULL。採点に使ったモデル名 |
 | input_tokens | integer | NULL |
 | output_tokens | integer | NULL |
@@ -89,7 +89,7 @@
 インデックス: `(section_id, created_at)`(履歴一覧を新しい順に出すため)
 
 - `grading_level` / `mode` / `status` は PHP の Enum(`GradingLevel` / `AttemptMode` / `AttemptStatus`)にキャストする
-- Postgres の enum 型は使わず、varchar + CHECK 制約にする(値を追加するときのマイグレーションを簡単にするため)
+- Postgres の enum 型は使わず、varchar + CHECK 制約にする(値を追加するときのマイグレーションを簡単にするため)。Laravel の `enum()` が PostgreSQL ではこの形(varchar(255) + CHECK)で作るので、それを使う
 
 ### 2.5 answers
 
