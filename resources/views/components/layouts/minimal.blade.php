@@ -24,5 +24,8 @@
             {{ $slot }}
         </div>
     </main>
+
+    {{-- ログアウト後の「ログアウトしました」など --}}
+    <x-ui.toast-stack :initial="session()->has('toast') ? [session('toast')] : []" />
 </body>
 </html>

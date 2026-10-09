@@ -14,6 +14,9 @@ Route::middleware('guest')->group(function () {
 
 // ログインが必要なページ。会員登録はないので、ここに入れるのは管理者だけ
 Route::middleware('auth')->group(function () {
+    // リンクを踏まされただけでログアウトさせられないよう、POST だけを受け付ける
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
     // ログイン後の着地点。本物のカテゴリ一覧は implementation-plan.md 4-1 で作る
     Route::view('/categories', 'categories.index')->name('categories.index');
 });

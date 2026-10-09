@@ -74,4 +74,16 @@
             </ul>
         @endif
     </nav>
+
+    {{-- 一番下にログアウト(screens.md 1.1)。ログインしていない画面(見本ページなど)では出さない --}}
+    @auth
+        <form method="POST" action="{{ route('logout') }}" class="shrink-0 border-t border-zinc-200 p-3">
+            @csrf
+            <button type="submit"
+                class="flex min-h-11 w-full items-center gap-2 rounded-md px-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:ring-3 focus-visible:ring-brand-200 focus-visible:outline-none lg:min-h-9">
+                <x-icon name="arrow-right-start-on-rectangle" class="size-4" />
+                ログアウト
+            </button>
+        </form>
+    @endauth
 </div>
