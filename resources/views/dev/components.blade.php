@@ -33,23 +33,6 @@
         ['role' => '補足', 'class' => 'text-xs text-zinc-500', 'sample' => '10月8日 14:32・8問'],
     ];
 
-    // サイドバーの見本用の仮データ。本番では View Composer が実データを共有する(implementation-plan.md 4-4)
-    view()->share('sidebarCategories', [
-        ['name' => '基本情報', 'href' => '#', 'current' => false, 'open' => true, 'sections' => [
-            ['name' => 'ネットワーク', 'href' => '#', 'current' => true],
-            ['name' => 'データベース', 'href' => '#', 'current' => false],
-            ['name' => 'セキュリティ', 'href' => '#', 'current' => false],
-        ]],
-        ['name' => '英語', 'href' => '#', 'current' => false, 'sections' => [
-            ['name' => '英文法', 'href' => '#', 'current' => false],
-        ]],
-        ['name' => 'Laravel', 'href' => '#', 'current' => false, 'sections' => [
-            ['name' => 'ルーティング', 'href' => '#', 'current' => false],
-            ['name' => 'Eloquent', 'href' => '#', 'current' => false],
-        ]],
-        ['name' => 'セクションのないカテゴリ', 'href' => '#', 'current' => false, 'sections' => []],
-    ]);
-
     // ?toast=1 で開くと、サーバーから渡すトースト(コントローラの ->with('toast', ...) と同じ経路)を確認できる
     if (request()->boolean('toast')) {
         session()->now('toast', ['type' => 'success', 'message' => 'カテゴリを作成しました']);

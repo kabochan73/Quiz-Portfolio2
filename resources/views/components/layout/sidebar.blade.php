@@ -3,11 +3,12 @@
     - 上にアプリ名、中央にカテゴリとセクションのナビゲーション
     - 現在のページが属するカテゴリは最初から開き、現在地は brand 色で強調する
 
-    categories は次の形の配列。実データとのつなぎ込みは implementation-plan.md 4-4 で行う。
+    categories は次の形の配列(実データは App\View\Composers\SidebarComposer が作る)。
     [
         'name' => 'カテゴリ名', 'href' => '...', 'current' => 現在地か, 'open' => 最初から開くか,
-        'sections' => [['name' => 'セクション名', 'href' => '...', 'current' => 現在地か], ...],
+        'sections' => [['name' => 'セクション名', 'href' => '...' または null, 'current' => 現在地か], ...],
     ]
+    セクションの href が null のときは、リンクにせず文字だけで表示する。
 --}}
 @props([
     'categories' => [],
@@ -60,11 +61,17 @@
                             <ul x-show="open" x-collapse x-cloak class="ml-9 space-y-0.5 py-0.5">
                                 @foreach ($category['sections'] as $section)
                                     <li>
-                                        <a href="{{ $section['href'] }}"
-                                            @if ($section['current']) aria-current="page" @endif
-                                            @class([$linkBase, $linkCurrent => $section['current'], 'text-zinc-600 hover:bg-zinc-100' => ! $section['current']])>
-                                            <span class="truncate">{{ $section['name'] }}</span>
-                                        </a>
+                                        @if ($section['href'])
+                                            <a href="{{ $section['href'] }}"
+                                                @if ($section['current']) aria-current="page" @endif
+                                                @class([$linkBase, $linkCurrent => $section['current'], 'text-zinc-600 hover:bg-zinc-100' => ! $section['current']])>
+                                                <span class="truncate">{{ $section['name'] }}</span>
+                                            </a>
+                                        @else
+                                            <span class="flex min-h-11 items-center px-2 text-sm text-zinc-600 lg:min-h-9">
+                                                <span class="truncate">{{ $section['name'] }}</span>
+                                            </span>
+                                        @endif
                                     </li>
                                 @endforeach
                             </ul>

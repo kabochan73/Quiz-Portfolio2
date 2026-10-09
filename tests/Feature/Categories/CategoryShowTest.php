@@ -4,6 +4,7 @@ use App\Models\Category;
 use App\Models\Question;
 use App\Models\Section;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->actingAs(User::factory()->create());
@@ -26,7 +27,11 @@ it('ほかのカテゴリのセクションは表示しない', function () {
     $category = Category::factory()->create();
     Section::factory()->create(['name' => '別カテゴリのセクション']);
 
-    $this->get(route('categories.show', $category))->assertDontSee('別カテゴリのセクション');
+    // サイドバーには全カテゴリのセクションが出るので、本文(main)の中だけで確かめる
+    $html = $this->get(route('categories.show', $category))->getContent();
+    $main = Str::between($html, '<main', '</main>');
+
+    expect($main)->not->toContain('別カテゴリのセクション');
 });
 
 it('パンくずはカテゴリ一覧 › カテゴリ名 になる', function () {

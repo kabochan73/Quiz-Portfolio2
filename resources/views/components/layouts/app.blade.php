@@ -5,8 +5,8 @@
     - narrow を付けると本文の最大幅を 640px にする(作成・編集フォーム用、design-guide.md 4.2)
     - breadcrumbs を渡すと本文の一番上にパンくずを出す。どのページでも同じ位置に出るよう、レイアウトで表示する
 
-    サイドバーのカテゴリ一覧は、ビューに共有された $sidebarCategories から受け取る
-    (実データの共有は implementation-plan.md 4-4 で View Composer を使って行う)。
+    サイドバーのカテゴリ一覧は $sidebarCategories で受け取る。
+    このレイアウトを表示するたびに、App\View\Composers\SidebarComposer が DB から読んで渡す。
 
     例: <x-layouts.app title="カテゴリ"> ... </x-layouts.app>
         <x-layouts.app title="カテゴリを作成" narrow :breadcrumbs="[
