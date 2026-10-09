@@ -63,7 +63,9 @@
 --font-sans: "Inter", "Noto Sans JP", system-ui, sans-serif;
 ```
 
-- Google Fonts から読み込む(Inter: 400 / 500 / 600、Noto Sans JP: 400 / 500 / 700)
+- Inter: 400 / 500 / 600、Noto Sans JP: 400 / 500 / 700
+- Laravel の Vite プラグインの `fonts`(`google()`)で、**ビルド時に Google Fonts から取り込み、自サイトから配信する**。表示のたびに外部へ取りに行かない(`vite.config.js`)
+- Noto Sans JP は文字の範囲ごとに約120個のファイルに分かれている。ブラウザはページで使われている文字の範囲のファイルだけを取りに行くので、先読み(preload)はしない
 - 英数字は Inter、日本語は Noto Sans JP で表示される
 - 点数などの数字には `tabular-nums` を付け、桁がそろうようにする
 
@@ -75,10 +77,11 @@
 | ページ見出し | `text-2xl font-semibold tracking-tight` | 24px / 600 | 「カテゴリ」 |
 | セクション見出し | `text-lg font-semibold` | 18px / 600 | 「問題一覧」 |
 | カード見出し | `text-base font-medium` | 16px / 500 | カテゴリ名 |
-| 本文 | `text-[15px] leading-relaxed` | 15px | 問題文、回答、フィードバック |
+| 本文 | `text-body` | 15px / 行間 1.75 | 問題文、回答、フィードバック |
 | UIテキスト | `text-sm` | 14px | ボタン、ナビゲーション、表 |
 | 補足 | `text-xs text-zinc-500` | 12px | 日時、件数 |
 
+- `text-body` は `@theme` で定義した独自のトークン(Tailwind 標準の sm と base の間のサイズ)
 - 入力欄は **16px 以上**にする(iOS で入力時に画面が拡大されるのを防ぐため)
 - 問題文・回答・フィードバックは改行を保持する(`whitespace-pre-wrap`)
 

@@ -3,12 +3,46 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * デザイントークン(design-guide.md)。
+ * 画面側では色コードや任意の値を直接書かず、ここで定義した値と Tailwind 標準の値だけを使う。
+ * ニュートラル(zinc)と点数・状態の色(emerald / amber / rose)は Tailwind 標準のものをそのまま使う。
+ */
+@theme {
+    /* 3.1 英数字は Inter、日本語は Noto Sans JP(読み込みは vite.config.js の fonts) */
+    --font-sans: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+
+    /* 3.2 本文(問題文・回答・フィードバック)用。Tailwind 標準の sm(14px)と base(16px)の間 */
+    --text-body: 0.9375rem;
+    --text-body--line-height: 1.75;
+
+    /* 2.2 アクセント: 彩度をやや抑えた落ち着いた青 */
+    --color-brand-50: #f0f5ff;
+    --color-brand-100: #dde7fb;
+    --color-brand-200: #bccff5;
+    --color-brand-500: #4a72d1;
+    --color-brand-600: #3a5fbb;
+    --color-brand-700: #2f4d99;
+}
+
+@layer base {
+    body {
+        @apply bg-zinc-50 text-zinc-700 antialiased;
+    }
+}
+
 /* Alpine の初期化前に、モーダルなど本来隠れている要素が一瞬見えるのを防ぐ */
 [x-cloak] {
     display: none !important;
 }
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* 5. 動きを減らす設定の利用者には、トランジションとアニメーションを止める */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
