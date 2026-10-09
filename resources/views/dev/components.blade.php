@@ -178,6 +178,25 @@
         </section>
 
         <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">「…」メニューと確認モーダル <code class="text-sm font-normal text-zinc-500">&lt;x-ui.dropdown / confirm-modal&gt;</code></h2>
+
+            <x-ui.card class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-base font-medium text-zinc-900">基本情報</p>
+                    <p class="mt-1 text-xs text-zinc-500">「…」から「削除」を選ぶと確認モーダルが開きます</p>
+                </div>
+                <x-ui.dropdown label="カテゴリの操作">
+                    <x-ui.dropdown-item href="#">編集</x-ui.dropdown-item>
+                    <x-ui.dropdown-item danger x-on:click="$dispatch('open-modal', 'sample-delete')">削除</x-ui.dropdown-item>
+                </x-ui.dropdown>
+            </x-ui.card>
+
+            <x-ui.confirm-modal name="sample-delete" title="カテゴリを削除しますか?" action="#">
+                「基本情報」と、その中のセクション3件・問題24件・履歴12件もまとめて削除されます。この操作は取り消せません。
+            </x-ui.confirm-modal>
+        </section>
+
+        <section class="space-y-4">
             <h2 class="text-lg font-semibold text-zinc-900">点数バッジ・前回比 <code class="text-sm font-normal text-zinc-500">&lt;x-ui.score-badge / score-delta&gt;</code></h2>
 
             <div>
