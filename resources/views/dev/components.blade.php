@@ -169,6 +169,53 @@
             </div>
         </section>
 
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-zinc-900">バッジ <code class="text-sm font-normal text-zinc-500">&lt;x-ui.badge / status-badge&gt;</code></h2>
+
+            <div>
+                <p class="mb-2 text-sm text-zinc-500">採点状態</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach (\App\Enums\AttemptStatus::cases() as $status)
+                        <x-ui.status-badge :status="$status" />
+                    @endforeach
+                </div>
+            </div>
+
+            <div>
+                <p class="mb-2 text-sm text-zinc-500">種別</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach (\App\Enums\AttemptMode::cases() as $mode)
+                        <x-ui.badge>{{ $mode->label() }}</x-ui.badge>
+                    @endforeach
+                </div>
+            </div>
+
+            <div>
+                <p class="mb-2 text-sm text-zinc-500">組み合わせの例(履歴一覧の1行)</p>
+                <x-ui.card :padding="false" class="divide-y divide-zinc-200">
+                    @foreach ([
+                        ['10/8 14:32', \App\Enums\AttemptMode::All, '普通', 8, 72, \App\Enums\AttemptStatus::Completed],
+                        ['10/7 21:05', \App\Enums\AttemptMode::Weak, '厳しい', 3, 54, \App\Enums\AttemptStatus::Completed],
+                        ['10/5 09:12', \App\Enums\AttemptMode::All, '普通', 8, null, \App\Enums\AttemptStatus::Grading],
+                        ['10/3 22:40', \App\Enums\AttemptMode::All, '優しい', 8, null, \App\Enums\AttemptStatus::Failed],
+                    ] as [$date, $mode, $level, $count, $score, $status])
+                        <div class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm lg:px-5">
+                            <span class="tabular-nums text-zinc-500">{{ $date }}</span>
+                            <x-ui.badge>{{ $mode->label() }}</x-ui.badge>
+                            <span class="text-zinc-700">{{ $level }}・{{ $count }}問</span>
+                            <span class="ml-auto">
+                                @if ($status === \App\Enums\AttemptStatus::Completed)
+                                    <x-ui.score-badge :score="$score" />
+                                @else
+                                    <x-ui.status-badge :status="$status" />
+                                @endif
+                            </span>
+                        </div>
+                    @endforeach
+                </x-ui.card>
+            </div>
+        </section>
+
         @php
             // エラー表示の見本を出すため、この見本ページでだけ、架空のエラーをビューに共有する
             // (本来はバリデーション失敗時に Laravel が自動で共有するもの)。
