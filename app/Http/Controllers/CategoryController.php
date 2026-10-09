@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -31,7 +31,7 @@ class CategoryController extends Controller
         return view('categories.create');
     }
 
-    public function store(StoreCategoryRequest $request): RedirectResponse
+    public function store(CategoryRequest $request): RedirectResponse
     {
         $category = Category::create($request->validated());
 
@@ -44,6 +44,8 @@ class CategoryController extends Controller
     /**
      * カテゴリ詳細(screens.md 2.4)。中のセクションを作成順に、問題数と一緒に並べる。
      * 平均点・最終挑戦日は implementation-plan.md 6-4 で追加する。
+     *
+     * 削除の確認モーダルで「一緒に消えるデータの件数」を出すため、問題数と挑戦(履歴)の数も数えておく。
      */
     public function show(Category $category): View
     {
@@ -52,6 +54,37 @@ class CategoryController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('categories.show', compact('category', 'sections'));
+        $questionCount = $sections->sum('questions_count');
+        $attemptCount = $category->attempts()->count();
+
+        return view('categories.show', compact('category', 'sections', 'questionCount', 'attemptCount'));
+    }
+
+    public function edit(Category $category): View
+    {
+        return view('categories.edit', compact('category'));
+    }
+
+    public function update(CategoryRequest $request, Category $category): RedirectResponse
+    {
+        $category->update($request->validated());
+
+        return redirect()
+            ->route('categories.show', $category)
+            ->with('toast', ['type' => 'success', 'message' => 'カテゴリを保存しました']);
+    }
+
+    /**
+     * requirements.md 3.2: 配下のセクション・問題・履歴もまとめて削除する。
+     * 削除は DB の外部キーの cascade に任せるので、カテゴリの1行を消すだけでよい。
+     */
+    public function destroy(Category $category): RedirectResponse
+    {
+        $category->delete();
+
+        // screens.md 3章: 削除したら1つ上の階層(カテゴリ一覧)へ戻る
+        return redirect()
+            ->route('categories.index')
+            ->with('toast', ['type' => 'success', 'message' => 'カテゴリを削除しました']);
     }
 }

@@ -5,10 +5,11 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * カテゴリの作成(requirements.md 3.2、screens.md 2.3)。入力はカテゴリ名だけ。
+ * カテゴリの作成・編集(requirements.md 3.2、screens.md 2.3)。入力はカテゴリ名だけ。
+ * 作成と編集で入力チェックはまったく同じなので、1つのクラスを両方で使う。
  * 文字数の上限は categories.name の varchar(100) に合わせる。
  */
-class StoreCategoryRequest extends FormRequest
+class CategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {

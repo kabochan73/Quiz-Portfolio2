@@ -31,4 +31,12 @@ class Category extends Model
     {
         return $this->hasManyThrough(Question::class, Section::class);
     }
+
+    /**
+     * セクションを通した、このカテゴリの全挑戦(履歴)。削除時の件数表示に使う。
+     */
+    public function attempts(): HasManyThrough
+    {
+        return $this->hasManyThrough(Attempt::class, Section::class);
+    }
 }
