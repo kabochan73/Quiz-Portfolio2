@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Attempt;
 use App\Models\Category;
 use App\Models\Question;
 use App\Models\Section;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->actingAs(User::factory()->create());
@@ -20,6 +22,33 @@ it('カテゴリ一覧に、カテゴリごとのセクション数と問題数�
         ->assertSee('基本情報')
         ->assertSee('2セクション・3問')
         ->assertSee('+ カテゴリを作成');
+});
+
+it('カテゴリのカードに最終挑戦日を出し、挑戦していなければそう伝える', function () {
+    $tried = Category::factory()->create(['name' => '基本情報']);
+    $section = Section::factory()->for($tried)->create();
+    Attempt::factory()->for($section)->create(['created_at' => '2026-10-03 21:00:00']);
+    Attempt::factory()->failed()->for($section)->create(['created_at' => '2026-10-07 20:00:00']); // 失敗も挑戦した日に含める
+    Category::factory()->create(['name' => '英語']);
+
+    $this->get('/categories')
+        ->assertSeeInOrder(['基本情報', '最終挑戦 10/7', '英語', 'まだ挑戦していません']);
+});
+
+it('カテゴリ一覧の問い合わせの回数は、カテゴリが増えても変わらない', function () {
+    $count = function () {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->get('/categories');
+
+        return count(DB::getQueryLog());
+    };
+
+    Category::factory()->count(2)->has(Section::factory()->has(Attempt::factory()))->create();
+    $few = $count();
+    Category::factory()->count(5)->has(Section::factory()->has(Attempt::factory()))->create();
+
+    expect($count())->toBe($few);
 });
 
 it('カテゴリは作成した順に並ぶ', function () {

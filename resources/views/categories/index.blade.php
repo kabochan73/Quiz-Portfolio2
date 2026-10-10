@@ -22,6 +22,13 @@
                 <x-ui.card href="{{ route('categories.show', $category) }}">
                     <p class="truncate text-base font-medium text-zinc-900">{{ $category->name }}</p>
                     <p class="mt-1 text-xs text-zinc-500">{{ $category->sections_count }}セクション・{{ $category->questions_count }}問</p>
+                    <p class="mt-0.5 text-xs text-zinc-500 tabular-nums">
+                        @if ($category->attempts_max_created_at)
+                            最終挑戦 {{ \Illuminate\Support\Carbon::parse($category->attempts_max_created_at)->format('n/j') }}
+                        @else
+                            まだ挑戦していません
+                        @endif
+                    </p>
                 </x-ui.card>
             @endforeach
         </div>

@@ -1,6 +1,6 @@
 {{--
     カテゴリ詳細(screens.md 2.4)。中のセクションを1枚のカードに行として並べる。
-    行ごとの平均点・最終挑戦日は implementation-plan.md 6-4 で追加する。
+    各行に、問題数・直近の全問の挑戦の平均点・最終挑戦日を出す(スマホでは最終挑戦日を2行目に回す)。
 --}}
 <x-layouts.app :title="$category->name" :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
@@ -41,8 +41,18 @@
             @foreach ($sections as $section)
                 <a href="{{ route('sections.show', $section) }}"
                     class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-zinc-50 focus-visible:ring-3 focus-visible:ring-brand-200 focus-visible:outline-none lg:px-5">
-                    <span class="min-w-0 flex-1 truncate font-medium text-zinc-900">{{ $section->name }}</span>
+                    @php
+                        $lastAttempt = $section->attempts_max_created_at
+                            ? '最終 '.\Illuminate\Support\Carbon::parse($section->attempts_max_created_at)->format('n/j')
+                            : '未挑戦';
+                    @endphp
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate font-medium text-zinc-900">{{ $section->name }}</span>
+                        <span class="block text-xs text-zinc-500 tabular-nums sm:hidden">{{ $lastAttempt }}</span>
+                    </span>
                     <span class="shrink-0 tabular-nums text-zinc-500">{{ $section->questions_count }}問</span>
+                    <x-ui.score-badge :score="$averages[$section->id] ?? null" />
+                    <span class="hidden w-16 shrink-0 text-right text-xs text-zinc-500 tabular-nums sm:inline">{{ $lastAttempt }}</span>
                     <x-icon name="chevron-right" class="size-4 text-zinc-500" />
                 </a>
             @endforeach

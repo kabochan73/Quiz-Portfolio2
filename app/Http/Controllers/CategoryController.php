@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use App\Queries\LatestAttemptAverages;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -13,13 +14,15 @@ use Illuminate\View\View;
 class CategoryController extends Controller
 {
     /**
-     * カテゴリ一覧(screens.md 2.2)。カードにセクション数と問題数を出す。
-     * 件数は withCount で、一覧を出す1回の問い合わせの中でまとめて数える(カテゴリごとに問い合わせない)。
+     * カテゴリ一覧(screens.md 2.2)。カードにセクション数・問題数・最終挑戦日を出す。
+     * どれも一覧を出す1回の問い合わせの中でまとめて求める(カテゴリごとに問い合わせない)。
+     * 最終挑戦日は採点中・失敗の挑戦も含める(挑戦した日として扱うため)。
      */
     public function index(): View
     {
         $categories = Category::query()
             ->withCount(['sections', 'questions'])
+            ->withMax('attempts', 'created_at')
             ->orderBy('id')
             ->get();
 
@@ -42,22 +45,25 @@ class CategoryController extends Controller
     }
 
     /**
-     * カテゴリ詳細(screens.md 2.4)。中のセクションを作成順に、問題数と一緒に並べる。
-     * 平均点・最終挑戦日は implementation-plan.md 6-4 で追加する。
+     * カテゴリ詳細(screens.md 2.4)。中のセクションを作成順に、問題数・平均点・最終挑戦日と一緒に並べる。
+     * 平均点は直近の「全問」の採点済みの挑戦のもの(LatestAttemptAverages)。
      *
      * 削除の確認モーダルで「一緒に消えるデータの件数」を出すため、問題数と挑戦(履歴)の数も数えておく。
      */
-    public function show(Category $category): View
+    public function show(Category $category, LatestAttemptAverages $latestAttemptAverages): View
     {
         $sections = $category->sections()
             ->withCount('questions')
+            ->withMax('attempts', 'created_at')
             ->orderBy('id')
             ->get();
+
+        $averages = $latestAttemptAverages->forSections($sections->pluck('id'));
 
         $questionCount = $sections->sum('questions_count');
         $attemptCount = $category->attempts()->count();
 
-        return view('categories.show', compact('category', 'sections', 'questionCount', 'attemptCount'));
+        return view('categories.show', compact('category', 'sections', 'averages', 'questionCount', 'attemptCount'));
     }
 
     public function edit(Category $category): View
