@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\QuestionRequest;
+use App\Models\Question;
 use App\Models\Section;
 use App\Services\QuestionPlacement;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -42,5 +44,20 @@ class QuestionController extends Controller
         return redirect()
             ->route('sections.show', $section)
             ->with('toast', ['type' => 'success', 'message' => '問題を作成しました']);
+    }
+
+    /**
+     * 問題詳細(screens.md 2.8)。全文を表示する。「最近の点数」は implementation-plan.md 6-6 で追加する。
+     */
+    public function show(Question $question): View
+    {
+        Gate::authorize('view', $question);
+
+        $question->load('section.category');
+
+        // パンくずの「問題 N」用に、セクションの中で何問目か(作成順)を求める
+        $number = $question->section->questions()->where('id', '<=', $question->id)->count();
+
+        return view('questions.show', compact('question', 'number'));
     }
 }

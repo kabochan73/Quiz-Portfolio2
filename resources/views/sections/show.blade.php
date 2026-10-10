@@ -1,7 +1,6 @@
 {{--
     セクション詳細(screens.md 2.6)。問題を1枚のカードに行として並べる。
     まだ置いていないもの(リンク先がないため):
-    - 行から問題詳細へのリンク → implementation-plan.md 4-3 の続き
     - 「全問に回答する」「苦手だけ再挑戦」「履歴を見る」の操作エリア → フェーズ5・6
     - 問題ごとの最新点数のバッジ → implementation-plan.md 6-4
 --}}
@@ -48,12 +47,15 @@
             </x-slot:action>
         </x-ui.empty-state>
     @else
+        {{-- 各行が問題詳細へのリンク --}}
         <x-ui.card :padding="false" class="divide-y divide-zinc-200">
             @foreach ($questions as $question)
-                <div class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm lg:px-5">
+                <a href="{{ route('questions.show', $question) }}"
+                    class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-zinc-50 focus-visible:ring-3 focus-visible:ring-brand-200 focus-visible:outline-none lg:px-5">
                     <span class="w-5 shrink-0 text-right tabular-nums text-zinc-500">{{ $loop->iteration }}</span>
                     <span class="min-w-0 flex-1 truncate text-zinc-900">{{ $question->excerpt() }}</span>
-                </div>
+                    <x-icon name="chevron-right" class="size-4 text-zinc-500" />
+                </a>
             @endforeach
         </x-ui.card>
     @endif

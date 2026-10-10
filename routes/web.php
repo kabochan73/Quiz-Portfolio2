@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function () {
     // 問題もセクションと同じ形の URL にする(/sections/{section}/questions/create、/questions/{question})
     Route::resource('sections.questions', QuestionController::class)
         ->shallow()
-        ->only(['create', 'store']);
+        ->only(['create', 'store', 'show']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。
