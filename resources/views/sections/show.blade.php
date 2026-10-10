@@ -1,7 +1,7 @@
 {{--
     セクション詳細(screens.md 2.6)。問題を1枚のカードに行として並べる。
     まだ置いていないもの(リンク先がないため):
-    - 「全問に回答する」「苦手だけ再挑戦」「履歴を見る」の操作エリア → フェーズ5・6
+    - 操作エリアの「苦手だけ再挑戦」「履歴を見る」 → implementation-plan.md 6-2 / 6-5
     - 問題ごとの最新点数のバッジ → implementation-plan.md 6-4
 --}}
 <x-layouts.app :title="$section->name" :breadcrumbs="[
@@ -23,6 +23,13 @@
     <x-ui.confirm-modal name="delete-section" title="セクションを削除しますか?" :action="route('sections.destroy', $section)">
         「{{ $section->name }}」と、その中の問題{{ $questions->count() }}件・履歴{{ $attemptCount }}件もまとめて削除されます。この操作は取り消せません。
     </x-ui.confirm-modal>
+
+    {{-- 操作エリア(screens.md 2.6)。問題が1問以上あるときだけ出す --}}
+    @if ($questions->isNotEmpty())
+        <x-ui.card class="mb-8">
+            <x-ui.button href="{{ route('answers.create', $section) }}" class="w-full sm:w-auto">全問に回答する({{ $questions->count() }}問)</x-ui.button>
+        </x-ui.card>
+    @endif
 
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-lg font-semibold text-zinc-900">問題</h2>

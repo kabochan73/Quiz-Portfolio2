@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\QuestionController;
@@ -31,6 +32,10 @@ Route::middleware('auth')->group(function () {
         ->except(['index']);
 
     // 問題もセクションと同じ形の URL にする(/sections/{section}/questions/create、/questions/{question})
+    // 回答。セクションの全問にまとめて回答する(requirements.md 6章の URL)
+    Route::get('/sections/{section}/answers/create', [AnswerController::class, 'create'])->name('answers.create');
+    Route::post('/sections/{section}/answers', [AnswerController::class, 'store'])->name('answers.store');
+
     // 問題の一覧はセクション詳細が兼ねるので、index は作らない
     Route::resource('sections.questions', QuestionController::class)
         ->shallow()
