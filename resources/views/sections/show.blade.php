@@ -1,7 +1,6 @@
 {{--
     セクション詳細(screens.md 2.6)。問題を1枚のカードに行として並べる。
     まだ置いていないもの(リンク先がないため):
-    - 操作エリアの「苦手だけ再挑戦」 → implementation-plan.md 6-5
 --}}
 <x-layouts.app :title="$section->name" :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
@@ -27,6 +26,7 @@
     @if ($questions->isNotEmpty())
         <x-ui.card class="mb-8 flex flex-wrap items-center gap-2">
             <x-ui.button href="{{ route('answers.create', $section) }}" class="w-full sm:w-auto">全問に回答する({{ $questions->count() }}問)</x-ui.button>
+            @include('answers._weak-button', ['section' => $section, 'weakCount' => $weakCount])
             <x-ui.button variant="ghost" href="{{ route('history.index', $section) }}" class="w-full sm:w-auto">履歴を見る</x-ui.button>
         </x-ui.card>
     @endif

@@ -29,7 +29,7 @@ function answerPayload(iterable $questions, array $overrides = []): array
         'body' => "問題{$i}への回答",
     ])->all();
 
-    return array_replace_recursive(['grading_level' => 'normal', 'answers' => $answers], $overrides);
+    return array_replace_recursive(['grading_level' => 'normal', 'mode' => 'all', 'answers' => $answers], $overrides);
 }
 
 it('セクション詳細に「全問に回答する」ボタンを出す', function () {

@@ -102,7 +102,7 @@ it('回答を送ると古い回答を整理し、新しく送った回答は必�
     pastAnswers($this->section, $this->question, 3);
 
     $this->post(route('answers.store', $this->section), [
-        'grading_level' => 'normal',
+        'grading_level' => 'normal', 'mode' => 'all',
         'answers' => [['question_id' => $this->question->id, 'body' => '今回の回答']],
     ])->assertSessionHasNoErrors();
 

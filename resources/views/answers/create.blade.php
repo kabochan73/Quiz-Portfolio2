@@ -1,13 +1,16 @@
 {{--
-    回答フォーム(screens.md 2.9)。セクションの全問を並べ、まとめて送信する。
+    回答フォーム(screens.md 2.9)。全問、または苦手問題だけ(mode=weak)を並べ、まとめて送信する。
     進捗表示・下書きの自動保存・離脱の確認は resources/js/answer-form.js。
     下書きのキーは結果画面(history/show.blade.php)で消すときと同じ形にする。
 --}}
 @php
-    $draftKey = "quiz:draft:section:{$section->id}:".App\Enums\AttemptMode::All->value;
+    $isWeak = $mode === App\Enums\AttemptMode::Weak;
+    $heading = $isWeak ? '苦手な問題に再挑戦' : '全問に回答する';
+    // 全問と苦手で、下書きは別々に保存する
+    $draftKey = "quiz:draft:section:{$section->id}:{$mode->value}";
 @endphp
 
-<x-layouts.app title="全問に回答する" :breadcrumbs="[
+<x-layouts.app :title="$heading" :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
     ['label' => $section->category->name, 'href' => route('categories.show', $section->category)],
     ['label' => $section->name, 'href' => route('sections.show', $section)],
@@ -19,8 +22,14 @@
         // 送信エラーで戻ってきたときは、サーバーが戻した入力を優先し、下書きで上書きしない
         'hasOldInput' => ! empty(old()),
     ]))">
-        <x-ui.page-header title="全問に回答する">
-            <x-slot:meta>{{ $section->name }}・{{ $questions->count() }}問</x-slot:meta>
+        <x-ui.page-header :title="$heading">
+            <x-slot:meta>
+                @if ($isWeak)
+                    前回{{ config('quiz.weak_threshold') }}点未満だった{{ $questions->count() }}問です
+                @else
+                    {{ $section->name }}・{{ $questions->count() }}問
+                @endif
+            </x-slot:meta>
             <x-slot:actions>
                 <div class="text-right">
                     <p class="text-sm font-medium tabular-nums text-zinc-900" aria-live="polite">
@@ -37,6 +46,7 @@
         <form method="POST" action="{{ route('answers.store', $section) }}" class="space-y-6"
             @input="onInput($event)" @submit="onSubmit()">
             @csrf
+            <input type="hidden" name="mode" value="{{ $mode->value }}">
 
             {{-- 問題の組み合わせが変わっていたときなど、特定の入力欄に結び付かないエラー --}}
             @error('answers')

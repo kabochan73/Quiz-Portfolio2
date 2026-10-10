@@ -2,18 +2,21 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AttemptMode;
 use App\Enums\GradingLevel;
 use App\Models\Section;
+use App\Queries\WeakQuestions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 /**
- * 回答の送信(requirements.md 3.3、architecture.md 4.2)。セクションの全問にまとめて回答する。
+ * 回答の送信(requirements.md 3.3、architecture.md 4.2)。セクションの問題にまとめて回答する。
  *
- * 入力欄ごとのチェックに加えて、「送られてきた問題の組み合わせが、セクションの今の全問と一致すること」を確かめる。
- * ほかのセクションの問題が混ざる・問題が足りない、のどちらも弾く
- * (フォームを開いている間に問題が追加・削除された場合もここで気づける)。
+ * 入力欄ごとのチェックに加えて、「送られてきた問題の組み合わせが、種別に応じた今の対象の問題と一致すること」を確かめる。
+ * - 全問(all): セクションの全問 / 苦手(weak): 送信した時点の苦手問題
+ * ほかのセクションの問題が混ざる・問題が足りない・苦手でない問題が混ざる、のどれも弾く
+ * (フォームを開いている間に問題の追加・削除や、別の採点で苦手問題が変わった場合もここで気づける)。
  */
 class StoreAnswersRequest extends FormRequest
 {
@@ -30,6 +33,7 @@ class StoreAnswersRequest extends FormRequest
     {
         return [
             'grading_level' => ['required', Rule::enum(GradingLevel::class)],
+            'mode' => ['required', Rule::enum(AttemptMode::class)],
             'answers' => ['required', 'array'],
             'answers.*.question_id' => ['required', 'integer', 'distinct'],
             // architecture.md 2.5: 回答は 5000 文字まで
@@ -52,7 +56,9 @@ class StoreAnswersRequest extends FormRequest
                 /** @var Section $section */
                 $section = $this->route('section');
 
-                $expected = $section->questions()->orderBy('id')->pluck('id')->all();
+                $expected = AttemptMode::from($this->input('mode')) === AttemptMode::Weak
+                    ? app(WeakQuestions::class)->ids($section)
+                    : $section->questions()->orderBy('id')->pluck('id')->all();
                 $submitted = collect($this->input('answers'))->pluck('question_id')->map(fn ($id) => (int) $id)->sort()->values()->all();
 
                 if ($expected !== $submitted) {

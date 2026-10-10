@@ -118,7 +118,7 @@ it('他人の挑戦は、存在を知らせないよう 404 にする', function
 it('回答を送ると結果画面へ移り、再読み込みしても挑戦は増えない(PRG)', function () {
     $questions = Question::factory()->count(2)->for($this->section)->for($this->admin)->create();
     $payload = [
-        'grading_level' => 'normal',
+        'grading_level' => 'normal', 'mode' => 'all',
         'answers' => $questions->values()->map(fn ($q, $i) => ['question_id' => $q->id, 'body' => "回答{$i}"])->all(),
     ];
 

@@ -7,6 +7,7 @@ use App\Jobs\GradeAttempt;
 use App\Models\Attempt;
 use App\Models\Section;
 use App\Queries\LatestScores;
+use App\Queries\WeakQuestions;
 use App\Support\CostCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -49,7 +50,7 @@ class HistoryController extends Controller
      *
      * URL のセクションと挑戦の組み合わせは、ルートの scopeBindings で確かめている(食い違えば 404)。
      */
-    public function show(Section $section, Attempt $attempt, LatestScores $latestScores): View
+    public function show(Section $section, Attempt $attempt, LatestScores $latestScores, WeakQuestions $weakQuestions): View
     {
         Gate::authorize('view', $attempt);
 
@@ -65,6 +66,9 @@ class HistoryController extends Controller
         // 全問と苦手では問題の組み合わせが違うので、種別をまたいでは比べない
         $previousAverage = $this->previousAverage($attempt);
 
+        // 「苦手だけ再挑戦(N問)」用。この採点の結果も反映した、今のセクションの苦手問題の数
+        $weakCount = count($weakQuestions->ids($section));
+
         // 画面の一番下に出す推定コスト(単価が分からなければ null で、トークン数だけを出す)
         $cost = CostCalculator::fromConfig()->estimate(
             $attempt->model,
@@ -73,7 +77,7 @@ class HistoryController extends Controller
             $attempt->web_search_requests,
         );
 
-        return view('history.show', compact('section', 'attempt', 'cost', 'previousScores', 'previousAverage'));
+        return view('history.show', compact('section', 'attempt', 'cost', 'previousScores', 'previousAverage', 'weakCount'));
     }
 
     private function previousAverage(Attempt $attempt): ?float

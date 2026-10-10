@@ -1,7 +1,5 @@
 {{--
     結果画面 = 履歴詳細(screens.md 2.10)。挑戦の状態で表示を切り替える。
-    まだ置いていないもの:
-    - 「苦手だけ再挑戦」 → 6-5
 --}}
 @php
     use App\Enums\AttemptStatus;
@@ -96,7 +94,8 @@
         </x-ui.card>
 
         <div class="mt-4 mb-8 flex flex-wrap gap-2">
-            <x-ui.button href="{{ route('answers.create', $section) }}">もう一度挑戦する</x-ui.button>
+            <x-ui.button href="{{ route('answers.create', $section) }}" class="w-full sm:w-auto">もう一度挑戦する</x-ui.button>
+            @include('answers._weak-button', ['section' => $section, 'weakCount' => $weakCount])
         </div>
 
         <div class="space-y-3">

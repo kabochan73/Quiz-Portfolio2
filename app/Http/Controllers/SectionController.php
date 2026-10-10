@@ -6,6 +6,7 @@ use App\Http\Requests\SectionRequest;
 use App\Models\Category;
 use App\Models\Section;
 use App\Queries\LatestScores;
+use App\Queries\WeakQuestions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -34,19 +35,21 @@ class SectionController extends Controller
      * セクション詳細(screens.md 2.6)。問題を作成順に、本文の抜粋で並べる。
      * 問題ごとに最新の点数のバッジを出し、どの問題が苦手かをひと目で分かるようにする。
      */
-    public function show(Section $section, LatestScores $latestScores): View
+    public function show(Section $section, LatestScores $latestScores, WeakQuestions $weakQuestions): View
     {
         $section->load('category');
         $questions = $section->questions()->orderBy('id')->get();
 
         // 問題ごとの最新の点数(点数バッジ用)。一度も採点されていない問題は含まれない
         $scores = $latestScores->forQuestions($questions->pluck('id'));
+        // 「苦手だけ再挑戦(N問)」用。求めた最新の点数から数え、同じ問い合わせを繰り返さない
+        $weakCount = count($weakQuestions->filter($scores));
         $maxQuestions = config('quiz.max_questions_per_section');
 
         // 削除の確認モーダルで「一緒に消える履歴の件数」を出すため
         $attemptCount = $section->attempts()->count();
 
-        return view('sections.show', compact('section', 'questions', 'scores', 'maxQuestions', 'attemptCount'));
+        return view('sections.show', compact('section', 'questions', 'scores', 'weakCount', 'maxQuestions', 'attemptCount'));
     }
 
     public function edit(Section $section): View

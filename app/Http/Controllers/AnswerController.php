@@ -9,28 +9,38 @@ use App\Http\Requests\StoreAnswersRequest;
 use App\Jobs\GradeAttempt;
 use App\Models\Attempt;
 use App\Models\Section;
+use App\Queries\WeakQuestions;
 use App\Services\AnswerRetentionService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
- * セクションの全問にまとめて回答する(requirements.md 3.3)。
- * 苦手問題だけに回答するモードは implementation-plan.md 6-5 で追加する。
+ * セクションの問題にまとめて回答する(requirements.md 3.3)。
+ * 種別は2つ: 全問(mode=all)/ 苦手問題だけ(mode=weak、最新の点数が基準点未満の問題)。
  */
 class AnswerController extends Controller
 {
     /**
-     * 回答フォーム(screens.md 2.9)。問題が0問のセクションでは開かせない。
+     * 回答フォーム(screens.md 2.9)。?mode=weak なら苦手問題だけを並べる。
+     * 対象の問題が0問なら開かせず、セクション詳細へ戻す。
      */
-    public function create(Section $section): View|RedirectResponse
+    public function create(Request $request, Section $section, WeakQuestions $weakQuestions): View|RedirectResponse
     {
-        $questions = $section->questions()->orderBy('id')->get();
+        $mode = AttemptMode::tryFrom((string) $request->query('mode')) ?? AttemptMode::All;
+
+        $questions = $section->questions()
+            ->when($mode === AttemptMode::Weak, fn ($query) => $query->whereIn('id', $weakQuestions->ids($section)))
+            ->orderBy('id')
+            ->get();
 
         if ($questions->isEmpty()) {
             return redirect()
                 ->route('sections.show', $section)
-                ->with('toast', ['type' => 'error', 'message' => 'このセクションにはまだ問題がありません']);
+                ->with('toast', ['type' => 'error', 'message' => $mode === AttemptMode::Weak
+                    ? '苦手な問題はありません'
+                    : 'このセクションにはまだ問題がありません']);
         }
 
         $section->load('category');
@@ -40,7 +50,7 @@ class AnswerController extends Controller
             ->mapWithKeys(fn (GradingLevel $level) => [$level->value => $level->label()])
             ->all();
 
-        return view('answers.create', compact('section', 'questions', 'gradingLevels'));
+        return view('answers.create', compact('section', 'questions', 'gradingLevels', 'mode'));
     }
 
     /**
@@ -54,7 +64,7 @@ class AnswerController extends Controller
             $attempt = $section->attempts()->create([
                 'user_id' => $request->user()->id,
                 'grading_level' => GradingLevel::from($request->validated('grading_level')),
-                'mode' => AttemptMode::All,
+                'mode' => AttemptMode::from($request->validated('mode')),
                 'status' => AttemptStatus::Pending,
             ]);
 
