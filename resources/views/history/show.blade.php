@@ -16,6 +16,10 @@
     ['label' => $section->name, 'href' => route('sections.show', $section)],
     ['label' => $attempt->created_at->format('n/j H:i')],
 ]">
+    {{-- 回答の送信に成功してこの画面に来たので、回答フォームの下書きを消す(architecture.md 7章)。
+         キーは answers/create.blade.php と同じ形。localStorage が使えない環境では何もしない --}}
+    <div x-data x-init="try { localStorage.removeItem(@js("quiz:draft:section:{$section->id}:{$attempt->mode->value}")) } catch {}"></div>
+
     <x-ui.page-header title="採点結果">
         <x-slot:meta>{{ $attempt->created_at->format('n月j日 H:i') }}・{{ $attempt->answers->count() }}問</x-slot:meta>
         <x-slot:actions>

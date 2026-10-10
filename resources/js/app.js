@@ -1,6 +1,7 @@
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse';
 import focus from '@alpinejs/focus';
+import answerForm from './answer-form';
 import attemptPoller from './attempt-poller';
 import toastStack from './toast';
 
@@ -12,6 +13,7 @@ Alpine.plugin(focus);
 // 複数の画面で使う Alpine コンポーネント
 Alpine.data('toastStack', toastStack);
 Alpine.data('attemptPoller', attemptPoller);
+Alpine.data('answerForm', answerForm);
 
 // Blade 内のインラインスクリプトや開発者ツールから参照できるようにしておく
 window.Alpine = Alpine;
