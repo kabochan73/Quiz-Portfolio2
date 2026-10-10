@@ -9,6 +9,7 @@ use App\Http\Requests\StoreAnswersRequest;
 use App\Jobs\GradeAttempt;
 use App\Models\Attempt;
 use App\Models\Section;
+use App\Services\AnswerRetentionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -46,9 +47,9 @@ class AnswerController extends Controller
      * 挑戦と回答をまとめて保存する(architecture.md 4.2)。
      * 途中で失敗したときに「回答のない挑戦」などが残らないよう、1つのトランザクションで保存する(v1 の不具合の修正)。
      */
-    public function store(StoreAnswersRequest $request, Section $section): RedirectResponse
+    public function store(StoreAnswersRequest $request, Section $section, AnswerRetentionService $retention): RedirectResponse
     {
-        $attempt = DB::transaction(function () use ($request, $section) {
+        $attempt = DB::transaction(function () use ($request, $section, $retention) {
             /** @var Attempt $attempt */
             $attempt = $section->attempts()->create([
                 'user_id' => $request->user()->id,
@@ -66,6 +67,10 @@ class AnswerController extends Controller
                     'body' => $answer['body'],
                 ]);
             }
+
+            // 同じ問題の古い回答を整理する(直近10件だけ残す、requirements.md 3.4)。
+            // 今回の回答は一番新しいので必ず残る
+            $retention->prune($section, collect($request->validated('answers'))->pluck('question_id'));
 
             // 採点は worker が裏で行う。トランザクションが確定してから投入し(afterCommit)、
             // worker がまだ存在しない挑戦を読もうとする事故を防ぐ(architecture.md 4.2)

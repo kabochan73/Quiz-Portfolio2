@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\QuestionRequest;
 use App\Models\Question;
 use App\Models\Section;
+use App\Services\AnswerRetentionService;
 use App\Services\QuestionPlacement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -92,15 +93,15 @@ class QuestionController extends Controller
      * その結果、回答が1つもなくなった挑戦(例: この問題だけに苦手モードで回答した挑戦)が履歴に残らないよう、
      * 同じトランザクションで削除する(requirements.md 3.4 の「回答が0件になった挑戦は削除」に合わせる)。
      */
-    public function destroy(Question $question): RedirectResponse
+    public function destroy(Question $question, AnswerRetentionService $retention): RedirectResponse
     {
         Gate::authorize('delete', $question);
 
         $section = $question->section;
 
-        DB::transaction(function () use ($question, $section) {
+        DB::transaction(function () use ($question, $section, $retention) {
             $question->delete();
-            $section->attempts()->doesntHave('answers')->delete();
+            $retention->deleteEmptyAttempts($section);
         });
 
         // screens.md 3章: 削除したら1つ上の階層(セクション詳細)へ戻る
