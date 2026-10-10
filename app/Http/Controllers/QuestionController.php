@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AttemptStatus;
 use App\Http\Requests\QuestionRequest;
 use App\Models\Question;
 use App\Models\Section;
@@ -18,6 +19,9 @@ use Illuminate\View\View;
  */
 class QuestionController extends Controller
 {
+    // 問題詳細の「最近の点数」に出す件数(screens.md 2.8)
+    private const RECENT_SCORES_LIMIT = 5;
+
     /**
      * 上限に達しているセクションでは、作成画面を開かせずにセクション詳細へ戻す
      * (ボタンは無効にしているが、URL を直接開かれた場合のため)。
@@ -49,7 +53,7 @@ class QuestionController extends Controller
     }
 
     /**
-     * 問題詳細(screens.md 2.8)。全文を表示する。「最近の点数」は implementation-plan.md 6-6 で追加する。
+     * 問題詳細(screens.md 2.8)。全文と、「最近の点数」(採点済みの直近5回分)を表示する。
      */
     public function show(Question $question): View
     {
@@ -61,7 +65,18 @@ class QuestionController extends Controller
         // 削除の確認モーダルで「一緒に消える回答の履歴の件数」を出すため
         $answerCount = $question->answers()->count();
 
-        return view('questions.show', compact('question', 'number', 'answerCount'));
+        // 最近の点数。採点中・失敗の回答には点数がないので除く。
+        // 各行から結果画面へ移れるよう、挑戦と採点結果もまとめて読み込む(行ごとに問い合わせない)
+        $recentAnswers = $question->answers()
+            ->whereHas('attempt', fn ($query) => $query->where('status', AttemptStatus::Completed))
+            ->has('score')
+            ->with(['score', 'attempt'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(self::RECENT_SCORES_LIMIT)
+            ->get();
+
+        return view('questions.show', compact('question', 'number', 'answerCount', 'recentAnswers'));
     }
 
     /**

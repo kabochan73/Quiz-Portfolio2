@@ -1,6 +1,12 @@
 <?php
 
+use App\Enums\AttemptMode;
+use App\Enums\AttemptStatus;
+use App\Enums\GradingLevel;
+use App\Models\Answer;
+use App\Models\Attempt;
 use App\Models\Question;
+use App\Models\Score;
 use App\Models\Section;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -61,4 +67,63 @@ it('ログインしていなければ開けない', function () {
     auth()->logout();
 
     $this->get(route('questions.show', $question))->assertRedirect('/login');
+});
+
+/**
+ * この問題への回答を、$daysAgo 日前の挑戦として作る。$score が null なら未採点。
+ */
+function recentAnswer(Question $question, int $daysAgo, ?int $score, array $attemptAttributes = []): Answer
+{
+    $at = now()->subDays($daysAgo);
+    $attempt = Attempt::factory()->completed()->for($question->section)->for($question->user)
+        ->create(array_merge(['created_at' => $at], $attemptAttributes));
+    $answer = Answer::factory()->for($attempt)->for($question)->create(['created_at' => $at]);
+
+    if ($score !== null) {
+        Score::factory()->for($answer)->create(['score' => $score]);
+    }
+
+    return $answer;
+}
+
+it('最近の点数に、採点済みの直近5回分を新しい順に出し、各行から結果画面へ移れる', function () {
+    $question = Question::factory()->for($this->admin)->create();
+    foreach ([10, 20, 30, 40, 50, 60] as $i => $score) {
+        recentAnswer($question, 10 - $i, $score); // 60点が一番新しい
+    }
+    $newest = Answer::orderByDesc('created_at')->first();
+
+    $main = Str::between($this->get(route('questions.show', $question))->getContent(), '<main', '</main>');
+
+    expect($main)->toMatch('#aria-label="60点".*aria-label="50点".*aria-label="40点".*aria-label="30点".*aria-label="20点"#s')
+        ->not->toContain('aria-label="10点"')
+        ->toContain('href="'.route('history.show', [$question->section_id, $newest->attempt_id]).'"');
+});
+
+it('最近の点数から、採点中・失敗の回答は除く', function () {
+    $question = Question::factory()->for($this->admin)->create();
+    recentAnswer($question, 3, 70);
+    recentAnswer($question, 2, null, ['status' => AttemptStatus::Failed]);
+    recentAnswer($question, 1, null, ['status' => AttemptStatus::Grading]);
+
+    $main = Str::between($this->get(route('questions.show', $question))->getContent(), '<main', '</main>');
+
+    expect(substr_count($main, '/history/'))->toBe(1)
+        ->and($main)->toContain('aria-label="70点"');
+});
+
+it('最近の点数に、採点レベルと、苦手モードで回答したときの種別を出す', function () {
+    $question = Question::factory()->for($this->admin)->create();
+    recentAnswer($question, 2, 40, ['grading_level' => GradingLevel::Hard]);
+    recentAnswer($question, 1, 70, ['mode' => AttemptMode::Weak]);
+
+    $main = Str::between($this->get(route('questions.show', $question))->getContent(), '<main', '</main>');
+
+    expect($main)->toMatch('#aria-label="70点".*普通.*苦手.*aria-label="40点".*厳しい#s');
+});
+
+it('採点された回答がなければ、そう伝える', function () {
+    $question = Question::factory()->for($this->admin)->create();
+
+    $this->get(route('questions.show', $question))->assertSee('まだ採点された回答がありません');
 });
