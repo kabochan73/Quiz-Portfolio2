@@ -1,7 +1,6 @@
 {{--
     結果画面 = 履歴詳細(screens.md 2.10)。挑戦の状態で表示を切り替える。
     まだ置いていないもの:
-    - 採点中のスケルトンとポーリング → implementation-plan.md 5-4 の続き(C2)
     - 失敗時の再採点ボタン → implementation-plan.md 5-4 の続き(C3)
     - 平均点の前回比 → 6-3 / 利用量・コスト → 5-6 / 「苦手だけ再挑戦」 → 6-5 / パンくずの「履歴」 → 6-2
 --}}
@@ -27,10 +26,31 @@
     </x-ui.page-header>
 
     @if ($attempt->status->isInProgress())
-        <x-ui.card>
-            <p class="text-base font-medium text-zinc-900">採点しています…</p>
-            <p class="mt-1 text-sm text-zinc-500">AIが回答を確認しています。しばらくしてから、このページを再読み込みしてください。</p>
-        </x-ui.card>
+        {{-- 採点中(screens.md 2.10 (a))。3秒ごとに状態を確かめ、終わったら再読み込みする(resources/js/attempt-poller.js) --}}
+        <div x-data="attemptPoller(@js(route('attempts.status', $attempt)))" class="space-y-3">
+            <x-ui.card role="status" aria-live="polite">
+                <div x-show="!timedOut">
+                    <p class="text-base font-medium text-zinc-900">採点しています…</p>
+                    <p class="mt-1 text-sm text-zinc-500">AIが{{ $attempt->answers->count() }}問の回答を確認しています。1分ほどかかることがあります。このページを離れても採点は続きます。</p>
+                </div>
+                <div x-show="timedOut" x-cloak>
+                    <p class="text-base font-medium text-zinc-900">時間がかかっています</p>
+                    <p class="mt-1 text-sm text-zinc-500">しばらくしてから、このページを再読み込みしてください。</p>
+                </div>
+            </x-ui.card>
+
+            {{-- 結果カードの形を先に見せ、待っている間も画面が止まって見えないようにする --}}
+            @foreach ($attempt->answers as $answer)
+                <x-ui.card class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <x-ui.skeleton class="h-4 w-20" />
+                        <x-ui.skeleton class="h-7 w-12 rounded-full" />
+                    </div>
+                    <x-ui.skeleton class="h-4 w-full" />
+                    <x-ui.skeleton class="h-4 w-2/3" />
+                </x-ui.card>
+            @endforeach
+        </div>
     @elseif ($attempt->status === AttemptStatus::Failed)
         <x-ui.card>
             <p class="text-base font-medium text-zinc-900">採点できませんでした</p>

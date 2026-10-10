@@ -42,6 +42,9 @@ Route::middleware('auth')->group(function () {
         ->scopeBindings()
         ->name('history.show');
 
+    // 採点の状態の確認(結果画面のポーリング用。JSON を返す)
+    Route::get('/attempts/{attempt}/status', [HistoryController::class, 'status'])->name('attempts.status');
+
     // 問題の一覧はセクション詳細が兼ねるので、index は作らない
     Route::resource('sections.questions', QuestionController::class)
         ->shallow()

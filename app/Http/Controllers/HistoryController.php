@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attempt;
 use App\Models\Section;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -27,5 +28,16 @@ class HistoryController extends Controller
         $attempt->load(['answers.question', 'answers.score']);
 
         return view('history.show', compact('section', 'attempt'));
+    }
+
+    /**
+     * 採点の状態だけを返す(architecture.md 4.7)。採点中の結果画面が3秒ごとに呼び、
+     * 完了・失敗になったらページを再読み込みする。
+     */
+    public function status(Attempt $attempt): JsonResponse
+    {
+        Gate::authorize('view', $attempt);
+
+        return response()->json(['status' => $attempt->status->value]);
     }
 }

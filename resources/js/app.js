@@ -1,6 +1,7 @@
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse';
 import focus from '@alpinejs/focus';
+import attemptPoller from './attempt-poller';
 import toastStack from './toast';
 
 // collapse: 結果画面の問題カードの開閉(x-collapse、design-guide.md 5章)
@@ -10,6 +11,7 @@ Alpine.plugin(focus);
 
 // 複数の画面で使う Alpine コンポーネント
 Alpine.data('toastStack', toastStack);
+Alpine.data('attemptPoller', attemptPoller);
 
 // Blade 内のインラインスクリプトや開発者ツールから参照できるようにしておく
 window.Alpine = Alpine;
