@@ -1,7 +1,7 @@
 {{--
     結果画面 = 履歴詳細(screens.md 2.10)。挑戦の状態で表示を切り替える。
     まだ置いていないもの:
-    - 平均点の前回比 → 6-3 / 利用量・コスト → 5-6 / 「苦手だけ再挑戦」 → 6-5 / パンくずの「履歴」 → 6-2
+    - 平均点の前回比 → 6-3 / 「苦手だけ再挑戦」 → 6-5 / パンくずの「履歴」 → 6-2
 --}}
 @php
     use App\Enums\AttemptStatus;
@@ -93,5 +93,13 @@
                 @include('history._answer-card', ['answer' => $answer, 'number' => $loop->iteration])
             @endforeach
         </div>
+
+        {{-- 使用量(screens.md 2.10 (b))。目立たせないよう一番下に小さく出す。
+             フェイクの採点など、利用量が記録されていなければ出さない --}}
+        @if ($attempt->input_tokens !== null)
+            <p class="mt-8 text-xs text-zinc-500 tabular-nums">
+                <span>使用量: 入力 {{ number_format($attempt->input_tokens) }} / 出力 {{ number_format($attempt->output_tokens) }} トークン・検索 {{ $attempt->web_search_requests ?? 0 }}回</span>@if ($cost !== null)<span>・約 ${{ number_format($cost, 3) }}</span>@endif
+            </p>
+        @endif
     @endif
 </x-layouts.app>

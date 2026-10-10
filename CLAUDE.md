@@ -41,7 +41,7 @@ docker compose exec app ./vendor/bin/pint  # コード整形
 
 - アプリ: http://localhost:8000(`npm run dev` を動かしていないときは、先に `npm run build` が必要)
 - `.env` の `GRADING_DRIVER=fake` にすると、Claude API を呼ばずに固定の採点結果を返す(画面の作り込みはこれで行う)
-- `.env` を変えたら `docker compose restart worker` で worker を再起動する。worker はコードは Job ごとに読み直すが、環境変数は起動時のものを使い続けるため(採点は worker が行うので、`GRADING_DRIVER` などの変更が反映されない)
+- `.env` を変えたら `docker compose restart app worker` で再起動する。worker(と PHP-FPM のプロセス)は、コードは読み直すが環境変数は起動時のものを使い続けることがあるため(特に採点は worker が行うので、再起動しないと `GRADING_DRIVER` などの変更が反映されない)
 
 ## 開発ルール
 

@@ -6,6 +6,7 @@ use App\Enums\AttemptStatus;
 use App\Jobs\GradeAttempt;
 use App\Models\Attempt;
 use App\Models\Section;
+use App\Support\CostCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,15 @@ class HistoryController extends Controller
         // 問題ごとのカードで、問題文・回答・採点結果を使う(1件ずつ問い合わせないよう、まとめて読み込む)
         $attempt->load(['answers.question', 'answers.score']);
 
-        return view('history.show', compact('section', 'attempt'));
+        // 画面の一番下に出す推定コスト(単価が分からなければ null で、トークン数だけを出す)
+        $cost = CostCalculator::fromConfig()->estimate(
+            $attempt->model,
+            $attempt->input_tokens,
+            $attempt->output_tokens,
+            $attempt->web_search_requests,
+        );
+
+        return view('history.show', compact('section', 'attempt', 'cost'));
     }
 
     /**

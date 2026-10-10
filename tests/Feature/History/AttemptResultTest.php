@@ -133,6 +133,38 @@ it('回答を送ると結果画面へ移り、再読み込みしても挑戦は�
     expect(Attempt::count())->toBe(1);
 });
 
+it('完了した結果の一番下に、使用量と推定コストを表示する', function () {
+    config([
+        'quiz.pricing.claude-sonnet-5-5' => ['input_per_mtok' => '2', 'output_per_mtok' => '10'],
+        'quiz.web_search_per_request' => '0.01',
+    ]);
+    $attempt = gradedAttempt($this->section, $this->admin, [80], [
+        'model' => 'claude-sonnet-5-5', 'input_tokens' => 6816, 'output_tokens' => 754, 'web_search_requests' => 2,
+    ]);
+
+    $this->get(resultUrl($attempt))
+        ->assertSee('使用量: 入力 6,816 / 出力 754 トークン・検索 2回')
+        ->assertSee('・約 $0.041');
+});
+
+it('単価が分からないモデルでは、コストは出さずに使用量だけを表示する', function () {
+    $attempt = gradedAttempt($this->section, $this->admin, [80], [
+        'model' => 'claude-opus-5-5', 'input_tokens' => 1000, 'output_tokens' => 200, 'web_search_requests' => 0,
+    ]);
+
+    $this->get(resultUrl($attempt))
+        ->assertSee('使用量: 入力 1,000 / 出力 200 トークン・検索 0回')
+        ->assertDontSee('・約 $');
+});
+
+it('利用量が記録されていない採点(フェイクなど)では、使用量の行を出さない', function () {
+    $attempt = gradedAttempt($this->section, $this->admin, [80], [
+        'model' => 'fake', 'input_tokens' => null, 'output_tokens' => null, 'web_search_requests' => null,
+    ]);
+
+    $this->get(resultUrl($attempt))->assertDontSee('使用量:');
+});
+
 it('ログインしていなければ開けない', function () {
     $attempt = gradedAttempt($this->section, $this->admin, [80]);
     auth()->logout();
