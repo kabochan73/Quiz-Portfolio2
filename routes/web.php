@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SectionController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories.sections', SectionController::class)
         ->shallow()
         ->except(['index']);
+
+    // 問題もセクションと同じ形の URL にする(/sections/{section}/questions/create、/questions/{question})
+    Route::resource('sections.questions', QuestionController::class)
+        ->shallow()
+        ->only(['create', 'store']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。

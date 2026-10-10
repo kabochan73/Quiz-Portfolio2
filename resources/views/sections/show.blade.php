@@ -1,7 +1,7 @@
 {{--
     セクション詳細(screens.md 2.6)。問題を1枚のカードに行として並べる。
     まだ置いていないもの(リンク先がないため):
-    - 「+ 問題を追加」と、行から問題詳細へのリンク → implementation-plan.md 4-3
+    - 行から問題詳細へのリンク → implementation-plan.md 4-3 の続き
     - 「全問に回答する」「苦手だけ再挑戦」「履歴を見る」の操作エリア → フェーズ5・6
     - 問題ごとの最新点数のバッジ → implementation-plan.md 6-4
 --}}
@@ -25,10 +25,28 @@
         「{{ $section->name }}」と、その中の問題{{ $questions->count() }}件・履歴{{ $attemptCount }}件もまとめて削除されます。この操作は取り消せません。
     </x-ui.confirm-modal>
 
-    <h2 class="mb-3 text-lg font-semibold text-zinc-900">問題</h2>
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold text-zinc-900">問題</h2>
+        {{-- 0問のときは空の状態の中に同じボタンがあるので、ここには出さない --}}
+        @if ($questions->isNotEmpty())
+            {{-- screens.md 2.6: 上限に達したらボタンを無効にし、理由を添える --}}
+            @if ($questions->count() >= $maxQuestions)
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-zinc-500">上限の{{ $maxQuestions }}問に達しています</span>
+                    <x-ui.button disabled>+ 問題を追加</x-ui.button>
+                </div>
+            @else
+                <x-ui.button href="{{ route('sections.questions.create', $section) }}">+ 問題を追加</x-ui.button>
+            @endif
+        @endif
+    </div>
 
     @if ($questions->isEmpty())
-        <x-ui.empty-state icon="document-text" title="まだ問題がありません" description="最初の問題を追加しましょう。" />
+        <x-ui.empty-state icon="document-text" title="まだ問題がありません" description="最初の問題を追加しましょう。">
+            <x-slot:action>
+                <x-ui.button href="{{ route('sections.questions.create', $section) }}">問題を追加</x-ui.button>
+            </x-slot:action>
+        </x-ui.empty-state>
     @else
         <x-ui.card :padding="false" class="divide-y divide-zinc-200">
             @foreach ($questions as $question)
