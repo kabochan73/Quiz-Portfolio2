@@ -1,8 +1,6 @@
 {{--
     カテゴリ詳細(screens.md 2.4)。中のセクションを1枚のカードに行として並べる。
-    まだ置いていないもの(リンク先がないため):
-    - 「+ セクションを追加」と、行からセクション詳細へのリンク → implementation-plan.md 4-2
-    - 行ごとの平均点・最終挑戦日 → implementation-plan.md 6-4
+    行ごとの平均点・最終挑戦日は implementation-plan.md 6-4 で追加する。
 --}}
 <x-layouts.app :title="$category->name" :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
@@ -23,17 +21,30 @@
         「{{ $category->name }}」と、その中のセクション{{ $sections->count() }}件・問題{{ $questionCount }}件・履歴{{ $attemptCount }}件もまとめて削除されます。この操作は取り消せません。
     </x-ui.confirm-modal>
 
-    <h2 class="mb-3 text-lg font-semibold text-zinc-900">セクション</h2>
+    <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold text-zinc-900">セクション</h2>
+        {{-- 0件のときは空の状態の中に同じボタンがあるので、ここには出さない --}}
+        @if ($sections->isNotEmpty())
+            <x-ui.button href="{{ route('categories.sections.create', $category) }}">+ セクションを追加</x-ui.button>
+        @endif
+    </div>
 
     @if ($sections->isEmpty())
-        <x-ui.empty-state icon="folder" title="まだセクションがありません" description="セクションを追加して、問題を登録しましょう。" />
+        <x-ui.empty-state icon="folder" title="まだセクションがありません" description="セクションを追加して、問題を登録しましょう。">
+            <x-slot:action>
+                <x-ui.button href="{{ route('categories.sections.create', $category) }}">セクションを追加</x-ui.button>
+            </x-slot:action>
+        </x-ui.empty-state>
     @else
+        {{-- 各行がセクション詳細へのリンク --}}
         <x-ui.card :padding="false" class="divide-y divide-zinc-200">
             @foreach ($sections as $section)
-                <div class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm lg:px-5">
+                <a href="{{ route('sections.show', $section) }}"
+                    class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-zinc-50 focus-visible:ring-3 focus-visible:ring-brand-200 focus-visible:outline-none lg:px-5">
                     <span class="min-w-0 flex-1 truncate font-medium text-zinc-900">{{ $section->name }}</span>
                     <span class="shrink-0 tabular-nums text-zinc-500">{{ $section->questions_count }}問</span>
-                </div>
+                    <x-icon name="chevron-right" class="size-4 text-zinc-500" />
+                </a>
             @endforeach
         </x-ui.card>
     @endif

@@ -5,7 +5,6 @@ namespace App\View\Composers;
 use App\Models\Category;
 use App\Models\Question;
 use App\Models\Section;
-use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
 /**
@@ -34,9 +33,6 @@ class SidebarComposer
     {
         [$currentCategoryId, $currentSectionId] = $this->currentLocation();
 
-        // セクション詳細は implementation-plan.md 4-2 で作る。それまではセクションをリンクにしない
-        $hasSectionPage = Route::has('sections.show');
-
         return Category::query()
             ->with(['sections' => fn ($query) => $query->orderBy('id')])
             ->orderBy('id')
@@ -49,7 +45,7 @@ class SidebarComposer
                 'open' => $category->id === $currentCategoryId,
                 'sections' => $category->sections->map(fn (Section $section) => [
                     'name' => $section->name,
-                    'href' => $hasSectionPage ? route('sections.show', $section) : null,
+                    'href' => route('sections.show', $section),
                     'current' => $section->id === $currentSectionId,
                 ])->all(),
             ])

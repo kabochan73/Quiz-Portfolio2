@@ -46,13 +46,11 @@ it('カテゴリ詳細以外のページでは、どのカテゴリも強調し�
         ->and($html)->not->toContain('x-data="{ open: true }"');
 });
 
-it('セクション詳細がまだないので、セクションはリンクにせず文字だけで表示する', function () {
-    Section::factory()->create(['name' => 'ネットワーク']);
+it('セクションは、セクション詳細へのリンクとして表示する', function () {
+    $section = Section::factory()->create(['name' => 'ネットワーク']);
 
-    $html = $this->get('/categories')->getContent();
-
-    expect($html)->toMatch('#<span class="truncate">ネットワーク</span>#')
-        ->and($html)->not->toMatch('#<a href="[^"]*/sections/#');
+    $this->get('/categories')
+        ->assertSee('href="'.route('sections.show', $section).'"', false);
 });
 
 it('カテゴリが0件なら、サイドバーに案内文を表示する', function () {

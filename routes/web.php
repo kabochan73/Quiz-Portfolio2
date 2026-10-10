@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SectionController;
 use Illuminate\Support\Facades\Route;
 
 // アプリの起点はログイン画面(requirements.md 6章)
@@ -20,6 +21,12 @@ Route::middleware('auth')->group(function () {
 
     // カテゴリ。一覧はログイン後の着地点
     Route::resource('categories', CategoryController::class);
+
+    // セクションは必ずカテゴリに属するので、作成だけカテゴリ配下の URL にし(/categories/{category}/sections/create)、
+    // 詳細などはセクションの ID だけで決まる短い URL にする(/sections/{section})。shallow はこの形を作る指定
+    Route::resource('categories.sections', SectionController::class)
+        ->shallow()
+        ->only(['create', 'store', 'show']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。
