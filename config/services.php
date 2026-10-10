@@ -14,6 +14,16 @@ return [
     |
     */
 
+    /*
+    | AI 採点(requirements.md 3.3)
+    | driver: fake(Claude API を呼ばない固定の採点)/ claude(本物の採点、implementation-plan.md 5-5)
+    | 既定値は持たせない。本番でうっかりフェイクの採点になる、またはローカルで意図せず API を呼ぶのを防ぐため、
+    | 必ず .env で明示する。
+    */
+    'grading' => [
+        'driver' => env('GRADING_DRIVER'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
