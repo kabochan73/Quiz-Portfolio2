@@ -7,6 +7,7 @@ use App\Models\Question;
 use App\Models\Section;
 use App\Services\QuestionPlacement;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -54,10 +55,84 @@ class QuestionController extends Controller
         Gate::authorize('view', $question);
 
         $question->load('section.category');
+        $number = $this->numberInSection($question);
 
-        // パンくずの「問題 N」用に、セクションの中で何問目か(作成順)を求める
-        $number = $question->section->questions()->where('id', '<=', $question->id)->count();
+        // 削除の確認モーダルで「一緒に消える回答の履歴の件数」を出すため
+        $answerCount = $question->answers()->count();
 
-        return view('questions.show', compact('question', 'number'));
+        return view('questions.show', compact('question', 'number', 'answerCount'));
+    }
+
+    /**
+     * 問題の編集(screens.md 2.7)。所属セクションは、全カテゴリのセクションから選べる。
+     * 上限に達しているセクション(今いるセクションを除く)は選べない状態にする。
+     */
+    public function edit(Question $question): View
+    {
+        Gate::authorize('update', $question);
+
+        $question->load('section.category');
+        $number = $this->numberInSection($question);
+
+        $sections = Section::query()
+            ->with('category')
+            ->withCount('questions')
+            ->orderBy('category_id')
+            ->orderBy('id')
+            ->get();
+
+        $sectionOptions = $sections->mapWithKeys(fn (Section $section) => [
+            $section->id => "{$section->category->name} / {$section->name}({$section->questions_count}問)",
+        ]);
+
+        $fullSectionIds = $sections
+            ->filter(fn (Section $section) => $section->questions_count >= config('quiz.max_questions_per_section'))
+            ->reject(fn (Section $section) => (int) $section->id === (int) $question->section_id)
+            ->pluck('id')
+            ->all();
+
+        return view('questions.edit', compact('question', 'number', 'sectionOptions', 'fullSectionIds'));
+    }
+
+    public function update(QuestionRequest $request, Question $question, QuestionPlacement $placement): RedirectResponse
+    {
+        Gate::authorize('update', $question);
+
+        $target = Section::findOrFail($request->validated('section_id'));
+        $placement->move($question, $target, $request->validated('body'));
+
+        return redirect()
+            ->route('questions.show', $question)
+            ->with('toast', ['type' => 'success', 'message' => '問題を保存しました']);
+    }
+
+    /**
+     * 問題を削除すると、その問題への回答と採点結果も cascade で消える。
+     * その結果、回答が1つもなくなった挑戦(例: この問題だけに苦手モードで回答した挑戦)が履歴に残らないよう、
+     * 同じトランザクションで削除する(requirements.md 3.4 の「回答が0件になった挑戦は削除」に合わせる)。
+     */
+    public function destroy(Question $question): RedirectResponse
+    {
+        Gate::authorize('delete', $question);
+
+        $section = $question->section;
+
+        DB::transaction(function () use ($question, $section) {
+            $question->delete();
+            $section->attempts()->doesntHave('answers')->delete();
+        });
+
+        // screens.md 3章: 削除したら1つ上の階層(セクション詳細)へ戻る
+        return redirect()
+            ->route('sections.show', $section)
+            ->with('toast', ['type' => 'success', 'message' => '問題を削除しました']);
+    }
+
+    /**
+     * パンくずの「問題 N」用に、セクションの中で何問目か(作成順)を求める。
+     */
+    private function numberInSection(Question $question): int
+    {
+        return $question->section->questions()->where('id', '<=', $question->id)->count();
     }
 }

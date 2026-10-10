@@ -32,6 +32,27 @@ class QuestionPlacement
     }
 
     /**
+     * 問題文の更新と、別のセクションへの移動。移動するときだけ、移動先の上限を確かめる
+     * (同じセクションのまま問題文を直すときは、問題数が増えないので確かめない)。
+     */
+    public function move(Question $question, Section $target, string $body): Question
+    {
+        return DB::transaction(function () use ($question, $target, $body) {
+            // ID は取得元によって文字列のこともあるので、整数にそろえて比べる
+            if ((int) $target->id !== (int) $question->section_id) {
+                $this->lockAndEnsureCapacity($target, errorKey: 'section_id');
+            }
+
+            $question->update([
+                'section_id' => $target->id,
+                'body' => $body,
+            ]);
+
+            return $question;
+        });
+    }
+
+    /**
      * 追加先のセクションの行をロックし、上限に達していればバリデーションエラーにする。
      * エラーは、画面上で原因の入力欄の下に出せるよう、呼び出し元が指定したキーに入れる。
      *

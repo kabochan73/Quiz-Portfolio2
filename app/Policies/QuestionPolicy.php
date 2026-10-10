@@ -21,4 +21,14 @@ class QuestionPolicy
             ? Response::allow()
             : Response::denyAsNotFound();
     }
+
+    public function update(User $user, Question $question): Response
+    {
+        return $this->view($user, $question);
+    }
+
+    public function delete(User $user, Question $question): Response
+    {
+        return $this->view($user, $question);
+    }
 }

@@ -31,9 +31,10 @@ Route::middleware('auth')->group(function () {
         ->except(['index']);
 
     // 問題もセクションと同じ形の URL にする(/sections/{section}/questions/create、/questions/{question})
+    // 問題の一覧はセクション詳細が兼ねるので、index は作らない
     Route::resource('sections.questions', QuestionController::class)
         ->shallow()
-        ->only(['create', 'store', 'show']);
+        ->except(['index']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。
