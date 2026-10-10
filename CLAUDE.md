@@ -23,7 +23,7 @@
 - PostgreSQL、キューは database ドライバ
 - AI採点: Claude API
 - テスト: Pest
-- デプロイ: Railway(web と worker の2サービス)
+- デプロイ: Railway(web と worker の2サービス)を想定。今回は見送り(2026-10-10 決定)
 
 ## 開発環境
 
