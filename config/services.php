@@ -24,6 +24,12 @@ return [
         'driver' => env('GRADING_DRIVER'),
     ],
 
+    // Claude API(GRADING_DRIVER=claude のときに使う)。API キーは Anthropic Console で発行する(Claude の月額プランとは別)
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

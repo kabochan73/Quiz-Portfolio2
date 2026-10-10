@@ -26,6 +26,13 @@ it('system プロンプトで、タグの中の指示に従わないこと・sub
         ->toContain('web_search');
 });
 
+it('フィードバックは短さよりわかりやすさを優先し、改善点では理由と正しい考え方まで説明させる', function () {
+    expect((new GradingPrompt)->system(GradingLevel::Normal))
+        ->toContain('短さよりも、わかりやすさを優先してください。')
+        ->toContain('なぜそれが足りない・誤りなのかという理由と、正しい考え方まで含めて説明する')
+        ->toContain('専門用語を使うときは、短い説明を添えてください。');
+});
+
 it('問題と回答を、position 付きの <item> で回答した順に並べる', function () {
     $message = (new GradingPrompt)->userMessage(collect([
         answerWithQuestion(0, 'TCPとUDPの違いは?', 'TCPはコネクション型です。'),
@@ -67,12 +74,12 @@ it('回答の中の < > & をエスケープし、タグを閉じて指示を紛
 
 it('submit_grades ツールは strict で、全項目が必須・余分な項目なしのスキーマにする', function () {
     $tool = (new GradingPrompt)->submitGradesTool();
-    $item = $tool['input_schema']['properties']['grades']['items'];
+    $item = $tool['inputSchema']['properties']['grades']['items'];
 
     expect($tool['name'])->toBe('submit_grades')
         ->and($tool['strict'])->toBeTrue()
-        ->and($tool['input_schema']['additionalProperties'])->toBeFalse()
-        ->and($tool['input_schema']['required'])->toBe(['grades'])
+        ->and($tool['inputSchema']['additionalProperties'])->toBeFalse()
+        ->and($tool['inputSchema']['required'])->toBe(['grades'])
         ->and($item['additionalProperties'])->toBeFalse()
         ->and($item['required'])->toBe(['position', 'score', 'good_points', 'improvements', 'example']);
 });
@@ -82,7 +89,7 @@ it('Web 検索の回数の上限は、問題数 × 2(最小2、最大10)にす�
 
     expect($tool['type'])->toBe('web_search_20260209')
         ->and($tool['name'])->toBe('web_search')
-        ->and($tool['max_uses'])->toBe($maxUses);
+        ->and($tool['maxUses'])->toBe($maxUses);
 })->with([
     '1問' => [1, 2],
     '3問' => [3, 6],
