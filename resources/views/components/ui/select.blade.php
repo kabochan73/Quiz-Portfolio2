@@ -1,10 +1,9 @@
 {{--
-    セレクトボックス(design-guide.md 7.2)。問題の所属セクションの変更などに使う。
+    セレクトボックス(design-guide.md 7.2)。選択肢から1つを選ぶ入力に使う。
     name を渡すだけで、選択値の復元(old)・エラー表示・ラベルとの関連付けを行う。
 
     options は [値 => 表示名] の配列。選べない選択肢(上限に達したセクションなど)は disabled に値を並べる。
-    例: <x-ui.select name="section_id" label="セクション" :options="$sections" :value="$question->section_id"
-                     :disabled="$fullSectionIds" />
+    例: <x-ui.select name="level" label="レベル" :options="$levels" :value="$current" :disabled="$unavailable" />
 --}}
 @props([
     'name',

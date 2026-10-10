@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
  * 同時に追加されて上限を超えないよう、トランザクションの中で追加先のセクションの行をロックしてから数える。
  * 2つ目の処理は1つ目が終わるまでロックで待たされ、数え直したときに上限に気づく。
  *
- * 問題の作成と、別のセクションへの移動(implementation-plan.md 4-3)の両方で使う。
+ * 問題を増やすのは作成のときだけ(所属セクションの変更はできない)なので、作成で使う。
  */
 class QuestionPlacement
 {
@@ -28,27 +28,6 @@ class QuestionPlacement
                 'user_id' => $user->id,
                 'body' => $body,
             ]);
-        });
-    }
-
-    /**
-     * 問題文の更新と、別のセクションへの移動。移動するときだけ、移動先の上限を確かめる
-     * (同じセクションのまま問題文を直すときは、問題数が増えないので確かめない)。
-     */
-    public function move(Question $question, Section $target, string $body): Question
-    {
-        return DB::transaction(function () use ($question, $target, $body) {
-            // ID は取得元によって文字列のこともあるので、整数にそろえて比べる
-            if ((int) $target->id !== (int) $question->section_id) {
-                $this->lockAndEnsureCapacity($target, errorKey: 'section_id');
-            }
-
-            $question->update([
-                'section_id' => $target->id,
-                'body' => $body,
-            ]);
-
-            return $question;
         });
     }
 

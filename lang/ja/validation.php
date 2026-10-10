@@ -65,12 +65,6 @@ return [
         'grading_level' => [
             'required' => '採点レベルを選んでください。',
         ],
-        'section_id' => [
-            'required' => 'セクションを選んでください。',
-        ],
-        'category_id' => [
-            'required' => 'カテゴリを選んでください。',
-        ],
     ],
 
     /*
@@ -89,7 +83,6 @@ return [
         'password' => 'パスワード',
         'name' => '名前',
         'body' => '本文',
-        'section_id' => 'セクション',
         'grading_level' => '採点レベル',
         'mode' => '種別',
         'answers' => '回答',

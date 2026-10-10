@@ -1,4 +1,4 @@
-{{-- セクションの編集(screens.md 2.5)。名前に加えて、所属カテゴリを変更できる --}}
+{{-- セクションの編集(screens.md 2.5)。変更できるのは名前だけ --}}
 <x-layouts.app title="セクションを編集" narrow :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
     ['label' => $section->category->name, 'href' => route('categories.show', $section->category)],
@@ -14,7 +14,6 @@
             @method('PUT')
             @include('sections._form', [
                 'section' => $section,
-                'categories' => $categories,
                 'submitLabel' => '保存する',
                 'cancelHref' => route('sections.show', $section),
             ])

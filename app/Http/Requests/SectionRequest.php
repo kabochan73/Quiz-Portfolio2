@@ -5,9 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * セクションの作成・編集(requirements.md 3.2、screens.md 2.5)。
- * - 作成: 入力はセクション名だけ。所属カテゴリは URL で決まる
- * - 編集: セクション名に加えて、所属カテゴリを変更できる
+ * セクションの作成・編集(requirements.md 3.2、screens.md 2.5)。入力はセクション名だけ。
+ * 所属カテゴリは作成時の URL で決まり、あとから変更はできない(2026-10-10 決定)。
+ * category_id はルールに含めないので、送られてきても validated() に入らず無視される。
  * 文字数の上限は sections.name の varchar(100) に合わせる。
  */
 class SectionRequest extends FormRequest
@@ -23,17 +23,9 @@ class SectionRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
+        return [
             'name' => ['required', 'string', 'max:100'],
         ];
-
-        // 所属カテゴリの変更は編集のときだけ受け付ける。
-        // 作成のときはルールに含めないので、送られてきても validated() に入らず無視される
-        if ($this->routeIs('sections.update')) {
-            $rules['category_id'] = ['required', 'integer', 'exists:categories,id'];
-        }
-
-        return $rules;
     }
 
     /**
@@ -43,7 +35,6 @@ class SectionRequest extends FormRequest
     {
         return [
             'name' => 'セクション名',
-            'category_id' => 'カテゴリ',
         ];
     }
 }

@@ -38,57 +38,46 @@ it('詳細の「…」メニューに編集と削除がある', function () {
         ->assertSee("\$dispatch('open-modal', 'delete-section')", false);
 });
 
-it('編集画面には今の名前が入り、所属カテゴリを選べる', function () {
-    $basic = Category::factory()->create(['name' => '基本情報']);
-    Category::factory()->create(['name' => '応用情報']);
-    $section = Section::factory()->for($basic)->create(['name' => 'ネットワーク']);
+it('編集画面には今の名前が入り、カテゴリを選ぶ欄はない', function () {
+    $section = Section::factory()->create(['name' => 'ネットワーク']);
 
-    $html = $this->get(route('sections.edit', $section))
+    $this->get(route('sections.edit', $section))
         ->assertOk()
         ->assertSee('value="ネットワーク"', false)
-        ->assertSee('別のカテゴリに移すと、問題と履歴も一緒に移ります。')
-        ->getContent();
-
-    expect($html)->toMatch('#<option value="'.$basic->id.'"\s+selected\s*>基本情報#')
-        ->toContain('応用情報');
+        ->assertDontSee('name="category_id"', false);
 });
 
 it('名前を変えて保存すると詳細へ戻り、トーストで知らせる', function () {
     $section = Section::factory()->create(['name' => 'ネットワーク']);
 
-    $this->put(route('sections.update', $section), ['name' => 'ネットワーク基礎', 'category_id' => $section->category_id])
+    $this->put(route('sections.update', $section), ['name' => 'ネットワーク基礎'])
         ->assertRedirect(route('sections.show', $section))
         ->assertSessionHas('toast', ['type' => 'success', 'message' => 'セクションを保存しました']);
 
     expect($section->fresh()->name)->toBe('ネットワーク基礎');
 });
 
-it('別のカテゴリに移すと、問題と履歴も一緒に移る', function () {
-    $section = sectionWithContents();
-    $other = Category::factory()->create();
+it('編集でも、セクション名が空なら保存できない', function () {
+    $section = Section::factory()->create(['name' => 'ネットワーク']);
 
-    $this->put(route('sections.update', $section), ['name' => $section->name, 'category_id' => $other->id]);
+    $this->put(route('sections.update', $section), ['name' => ''])
+        ->assertSessionHasErrors(['name' => 'セクション名を入力してください。']);
 
-    $section->refresh();
-    expect($section->category_id)->toBe($other->id)
-        ->and($other->questions()->count())->toBe(2)
-        ->and($other->attempts()->count())->toBe(3);
+    expect($section->fresh()->name)->toBe('ネットワーク');
 });
 
-it('編集では、カテゴリが未選択・存在しないカテゴリなら保存できない', function (?int $categoryId, string $message) {
+it('所属カテゴリは変更できず、カテゴリを送っても無視する', function () {
     $section = Section::factory()->create();
     $original = $section->category_id;
+    $other = Category::factory()->create();
 
-    $this->put(route('sections.update', $section), ['name' => '変更', 'category_id' => $categoryId])
-        ->assertSessionHasErrors(['category_id' => $message]);
+    $this->put(route('sections.update', $section), ['name' => '変更', 'category_id' => $other->id])
+        ->assertSessionHasNoErrors();
 
     expect($section->fresh()->category_id)->toBe($original);
-})->with([
-    '未選択' => [null, 'カテゴリを選んでください。'],
-    '存在しない' => [999, '選択されたカテゴリは存在しません。'],
-]);
+});
 
-it('作成のときは、カテゴリを送っても無視して URL のカテゴリに作る', function () {
+it('作成のときも、カテゴリを送っても無視して URL のカテゴリに作る', function () {
     $category = Category::factory()->create();
     $other = Category::factory()->create();
 
@@ -126,7 +115,7 @@ it('ログインしていなければ、編集も削除もできない', functio
     $section = Section::factory()->create(['name' => 'ネットワーク']);
 
     $this->get(route('sections.edit', $section))->assertRedirect('/login');
-    $this->put(route('sections.update', $section), ['name' => '変更', 'category_id' => $section->category_id])->assertRedirect('/login');
+    $this->put(route('sections.update', $section), ['name' => '変更'])->assertRedirect('/login');
     $this->delete(route('sections.destroy', $section))->assertRedirect('/login');
 
     expect($section->fresh()->name)->toBe('ネットワーク');

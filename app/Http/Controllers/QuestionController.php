@@ -64,8 +64,7 @@ class QuestionController extends Controller
     }
 
     /**
-     * 問題の編集(screens.md 2.7)。所属セクションは、全カテゴリのセクションから選べる。
-     * 上限に達しているセクション(今いるセクションを除く)は選べない状態にする。
+     * 問題の編集(screens.md 2.7)。変更できるのは問題文だけ(所属セクションは変更できない)。
      */
     public function edit(Question $question): View
     {
@@ -74,32 +73,14 @@ class QuestionController extends Controller
         $question->load('section.category');
         $number = $this->numberInSection($question);
 
-        $sections = Section::query()
-            ->with('category')
-            ->withCount('questions')
-            ->orderBy('category_id')
-            ->orderBy('id')
-            ->get();
-
-        $sectionOptions = $sections->mapWithKeys(fn (Section $section) => [
-            $section->id => "{$section->category->name} / {$section->name}({$section->questions_count}問)",
-        ]);
-
-        $fullSectionIds = $sections
-            ->filter(fn (Section $section) => $section->questions_count >= config('quiz.max_questions_per_section'))
-            ->reject(fn (Section $section) => (int) $section->id === (int) $question->section_id)
-            ->pluck('id')
-            ->all();
-
-        return view('questions.edit', compact('question', 'number', 'sectionOptions', 'fullSectionIds'));
+        return view('questions.edit', compact('question', 'number'));
     }
 
-    public function update(QuestionRequest $request, Question $question, QuestionPlacement $placement): RedirectResponse
+    public function update(QuestionRequest $request, Question $question): RedirectResponse
     {
         Gate::authorize('update', $question);
 
-        $target = Section::findOrFail($request->validated('section_id'));
-        $placement->move($question, $target, $request->validated('body'));
+        $question->update(['body' => $request->validated('body')]);
 
         return redirect()
             ->route('questions.show', $question)

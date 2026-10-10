@@ -48,13 +48,12 @@ class SectionController extends Controller
     public function edit(Section $section): View
     {
         $section->load('category');
-        $categories = Category::query()->orderBy('id')->pluck('name', 'id');
 
-        return view('sections.edit', compact('section', 'categories'));
+        return view('sections.edit', compact('section'));
     }
 
     /**
-     * 名前と所属カテゴリを更新する。カテゴリを移しても、問題と履歴はセクションに付いているので一緒に移る。
+     * 名前だけを更新する。所属カテゴリは変更できない(requirements.md 3.2)。
      */
     public function update(SectionRequest $request, Section $section): RedirectResponse
     {

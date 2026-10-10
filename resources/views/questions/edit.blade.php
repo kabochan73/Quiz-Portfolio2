@@ -1,4 +1,4 @@
-{{-- 問題の編集(screens.md 2.7)。問題文に加えて、所属セクションを変更できる --}}
+{{-- 問題の編集(screens.md 2.7)。変更できるのは問題文だけ --}}
 <x-layouts.app title="問題を編集" narrow :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
     ['label' => $question->section->category->name, 'href' => route('categories.show', $question->section->category)],
@@ -15,8 +15,6 @@
             @method('PUT')
             @include('questions._form', [
                 'question' => $question,
-                'sectionOptions' => $sectionOptions,
-                'fullSectionIds' => $fullSectionIds,
                 'submitLabel' => '保存する',
                 'cancelHref' => route('questions.show', $question),
             ])
