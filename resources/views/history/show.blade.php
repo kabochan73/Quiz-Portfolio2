@@ -1,7 +1,6 @@
 {{--
     結果画面 = 履歴詳細(screens.md 2.10)。挑戦の状態で表示を切り替える。
     まだ置いていないもの:
-    - 失敗時の再採点ボタン → implementation-plan.md 5-4 の続き(C3)
     - 平均点の前回比 → 6-3 / 利用量・コスト → 5-6 / 「苦手だけ再挑戦」 → 6-5 / パンくずの「履歴」 → 6-2
 --}}
 @php
@@ -52,10 +51,26 @@
             @endforeach
         </div>
     @elseif ($attempt->status === AttemptStatus::Failed)
-        <x-ui.card>
+        {{-- 失敗(screens.md 2.10 (c))。回答は保存されているので、入力し直さずに再採点できる。
+             失敗の詳しい理由は画面に出さない(ログと error_message で確認する) --}}
+        <x-ui.card role="alert">
             <p class="text-base font-medium text-zinc-900">採点できませんでした</p>
-            <p class="mt-1 text-sm text-zinc-500">AIの採点中にエラーが発生しました。</p>
+            <p class="mt-1 text-sm text-zinc-500">AIの採点中にエラーが発生しました。回答は保存されているので、入力し直さずに再採点できます。</p>
+
+            <form method="POST" action="{{ route('attempts.regrade', $attempt) }}" class="mt-5 flex flex-wrap gap-2"
+                x-data="{ submitting: false }" @submit="submitting = true">
+                @csrf
+                <x-ui.button type="submit" ::disabled="submitting">再採点する</x-ui.button>
+                <x-ui.button variant="secondary" href="{{ route('sections.show', $section) }}">セクションに戻る</x-ui.button>
+            </form>
         </x-ui.card>
+
+        <h2 class="mt-8 mb-3 text-lg font-semibold text-zinc-900">あなたの回答({{ $attempt->answers->count() }}問)</h2>
+        <div class="space-y-3">
+            @foreach ($attempt->answers as $answer)
+                @include('history._answer-card', ['answer' => $answer, 'number' => $loop->iteration])
+            @endforeach
+        </div>
     @else
         {{-- 平均点のカード(screens.md 2.10 (b)) --}}
         <x-ui.card class="flex flex-wrap items-end justify-between gap-4">

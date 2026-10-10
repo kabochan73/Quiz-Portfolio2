@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AttemptStatus;
+use App\Jobs\GradeAttempt;
 use App\Models\Attempt;
 use App\Models\Section;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -28,6 +32,26 @@ class HistoryController extends Controller
         $attempt->load(['answers.question', 'answers.score']);
 
         return view('history.show', compact('section', 'attempt'));
+    }
+
+    /**
+     * 失敗した挑戦を、回答はそのままで採点し直す(architecture.md 4.6)。
+     * 失敗のときだけ受け付け、それ以外(完了・採点中など)は何もせず結果画面へ戻す(二重に採点しないため)。
+     */
+    public function regrade(Attempt $attempt): RedirectResponse
+    {
+        Gate::authorize('regrade', $attempt);
+
+        if ($attempt->status === AttemptStatus::Failed) {
+            DB::transaction(function () use ($attempt) {
+                $attempt->update(['status' => AttemptStatus::Pending, 'error_message' => null]);
+
+                GradeAttempt::dispatch($attempt)->afterCommit();
+            });
+        }
+
+        // 結果画面へ戻ると、採点中の表示とポーリングが始まり、終われば自動で結果に切り替わる
+        return redirect()->route('history.show', [$attempt->section_id, $attempt]);
     }
 
     /**

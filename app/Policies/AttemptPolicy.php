@@ -18,4 +18,13 @@ class AttemptPolicy
             ? Response::allow()
             : Response::denyAsNotFound();
     }
+
+    /**
+     * 再採点(architecture.md 4.6)。自分の挑戦なら受け付ける。
+     * 「失敗のときだけ再採点する」という状態の確認は、権限ではなく処理の条件なのでコントローラで行う。
+     */
+    public function regrade(User $user, Attempt $attempt): Response
+    {
+        return $this->view($user, $attempt);
+    }
 }

@@ -45,6 +45,9 @@ Route::middleware('auth')->group(function () {
     // 採点の状態の確認(結果画面のポーリング用。JSON を返す)
     Route::get('/attempts/{attempt}/status', [HistoryController::class, 'status'])->name('attempts.status');
 
+    // 失敗した挑戦の再採点
+    Route::post('/attempts/{attempt}/regrade', [HistoryController::class, 'regrade'])->name('attempts.regrade');
+
     // 問題の一覧はセクション詳細が兼ねるので、index は作らない
     Route::resource('sections.questions', QuestionController::class)
         ->shallow()
