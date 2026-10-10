@@ -71,11 +71,11 @@ it('回答を送ると、採点待ちの挑戦と、問題ごとの回答を順�
     // テストのキューはその場で実行(sync)なので、ここでは Job を止めて「保存した直後」の状態を確かめる
     Queue::fake();
 
-    $this->post(route('answers.store', $this->section), answerPayload($this->questions, ['grading_level' => 'hard']))
-        ->assertRedirect(route('sections.show', $this->section))
-        ->assertSessionHas('toast', ['type' => 'success', 'message' => '回答を送信しました']);
+    $response = $this->post(route('answers.store', $this->section), answerPayload($this->questions, ['grading_level' => 'hard']));
 
     $attempt = Attempt::sole();
+    // 結果画面へリダイレクトする(PRG)
+    $response->assertRedirect(route('history.show', [$this->section, $attempt]));
     expect($attempt->section_id)->toBe($this->section->id)
         ->and($attempt->user_id)->toBe($this->admin->id)
         ->and($attempt->status)->toBe(AttemptStatus::Pending)

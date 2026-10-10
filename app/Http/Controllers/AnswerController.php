@@ -48,7 +48,7 @@ class AnswerController extends Controller
      */
     public function store(StoreAnswersRequest $request, Section $section): RedirectResponse
     {
-        DB::transaction(function () use ($request, $section) {
+        $attempt = DB::transaction(function () use ($request, $section) {
             /** @var Attempt $attempt */
             $attempt = $section->attempts()->create([
                 'user_id' => $request->user()->id,
@@ -70,11 +70,12 @@ class AnswerController extends Controller
             // 採点は worker が裏で行う。トランザクションが確定してから投入し(afterCommit)、
             // worker がまだ存在しない挑戦を読もうとする事故を防ぐ(architecture.md 4.2)
             GradeAttempt::dispatch($attempt)->afterCommit();
+
+            return $attempt;
         });
 
-        // 本来は結果画面へ移る(implementation-plan.md 5-4 で変更する)
-        return redirect()
-            ->route('sections.show', $section)
-            ->with('toast', ['type' => 'success', 'message' => '回答を送信しました']);
+        // 結果画面へリダイレクトする(PRG)。結果画面は GET なので、再読み込みしても回答が再送信されず、
+        // 二重に採点されることもない(v1 の不具合の修正)
+        return redirect()->route('history.show', [$section, $attempt]);
     }
 }

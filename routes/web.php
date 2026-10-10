@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SectionController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,11 @@ Route::middleware('auth')->group(function () {
     // 回答。セクションの全問にまとめて回答する(requirements.md 6章の URL)
     Route::get('/sections/{section}/answers/create', [AnswerController::class, 'create'])->name('answers.create');
     Route::post('/sections/{section}/answers', [AnswerController::class, 'store'])->name('answers.store');
+
+    // 結果画面 = 履歴詳細。scopeBindings で、URL のセクションと挑戦の組み合わせが正しいかを確かめる(食い違えば 404)
+    Route::get('/sections/{section}/history/{attempt}', [HistoryController::class, 'show'])
+        ->scopeBindings()
+        ->name('history.show');
 
     // 問題の一覧はセクション詳細が兼ねるので、index は作らない
     Route::resource('sections.questions', QuestionController::class)
