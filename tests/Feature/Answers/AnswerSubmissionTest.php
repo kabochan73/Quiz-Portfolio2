@@ -3,11 +3,13 @@
 use App\Enums\AttemptMode;
 use App\Enums\AttemptStatus;
 use App\Enums\GradingLevel;
+use App\Jobs\GradeAttempt;
 use App\Models\Answer;
 use App\Models\Attempt;
 use App\Models\Question;
 use App\Models\Section;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
@@ -66,6 +68,9 @@ it('問題が0問のセクションの回答フォームは開かせず、理由
 });
 
 it('回答を送ると、採点待ちの挑戦と、問題ごとの回答を順番付きで保存する', function () {
+    // テストのキューはその場で実行(sync)なので、ここでは Job を止めて「保存した直後」の状態を確かめる
+    Queue::fake();
+
     $this->post(route('answers.store', $this->section), answerPayload($this->questions, ['grading_level' => 'hard']))
         ->assertRedirect(route('sections.show', $this->section))
         ->assertSessionHas('toast', ['type' => 'success', 'message' => '回答を送信しました']);
@@ -79,6 +84,22 @@ it('回答を送ると、採点待ちの挑戦と、問題ごとの回答を順�
         ->and($attempt->answers->pluck('position')->all())->toBe([0, 1, 2])
         ->and($attempt->answers->pluck('question_id')->all())->toBe($this->questions->pluck('id')->all())
         ->and($attempt->answers->first()->body)->toBe('問題0への回答');
+});
+
+it('回答を送ると、その挑戦の採点 Job を投入する', function () {
+    Queue::fake();
+
+    $this->post(route('answers.store', $this->section), answerPayload($this->questions));
+
+    Queue::assertPushed(GradeAttempt::class, fn (GradeAttempt $job) => $job->attempt->is(Attempt::sole()));
+});
+
+it('回答を送ると、worker の採点(テストではその場で実行)で挑戦が完了し、採点結果が保存される', function () {
+    $this->post(route('answers.store', $this->section), answerPayload($this->questions));
+
+    $attempt = Attempt::sole();
+    expect($attempt->status)->toBe(AttemptStatus::Completed)
+        ->and($attempt->answers()->has('score')->count())->toBe(3);
 });
 
 it('回答が空・5001文字以上なら保存せず、「回答」としてエラーを伝える', function (string $body, string $message) {

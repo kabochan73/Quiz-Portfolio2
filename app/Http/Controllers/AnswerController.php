@@ -6,6 +6,7 @@ use App\Enums\AttemptMode;
 use App\Enums\AttemptStatus;
 use App\Enums\GradingLevel;
 use App\Http\Requests\StoreAnswersRequest;
+use App\Jobs\GradeAttempt;
 use App\Models\Attempt;
 use App\Models\Section;
 use Illuminate\Http\RedirectResponse;
@@ -65,9 +66,13 @@ class AnswerController extends Controller
                     'body' => $answer['body'],
                 ]);
             }
+
+            // 採点は worker が裏で行う。トランザクションが確定してから投入し(afterCommit)、
+            // worker がまだ存在しない挑戦を読もうとする事故を防ぐ(architecture.md 4.2)
+            GradeAttempt::dispatch($attempt)->afterCommit();
         });
 
-        // 本来は結果画面へ移る(implementation-plan.md 5-4 で変更する)。採点の Job は 5-3 で追加する
+        // 本来は結果画面へ移る(implementation-plan.md 5-4 で変更する)
         return redirect()
             ->route('sections.show', $section)
             ->with('toast', ['type' => 'success', 'message' => '回答を送信しました']);
