@@ -9,15 +9,39 @@ use App\Models\Section;
 use App\Support\CostCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * セクションの挑戦の履歴(requirements.md 3.4)。履歴一覧は implementation-plan.md 6-2 で追加する。
+ * セクションの挑戦の履歴(requirements.md 3.4)。履歴は問題単位ではなく、挑戦単位で一覧・詳細を表示する。
  */
 class HistoryController extends Controller
 {
+    private const PER_PAGE = 20;
+
+    /**
+     * 履歴一覧(screens.md 2.11)。新しい順に20件ずつ表示する。
+     * 問題数と平均点は、一覧を取り出す問い合わせの中でまとめて求める(挑戦ごとに問い合わせない)。
+     */
+    public function index(Request $request, Section $section): View
+    {
+        $section->load('category');
+
+        $attempts = $section->attempts()
+            ->where('user_id', $request->user()->id)
+            ->withCount('answers')
+            ->withAvg('scores', 'score')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->simplePaginate(self::PER_PAGE);
+
+        $total = $section->attempts()->where('user_id', $request->user()->id)->count();
+
+        return view('history.index', compact('section', 'attempts', 'total'));
+    }
+
     /**
      * 結果画面 = 履歴詳細(screens.md 2.10)。採点直後も、あとから履歴で開いたときも同じ画面。
      * 状態(採点中 / 完了 / 失敗)によって表示を切り替える。

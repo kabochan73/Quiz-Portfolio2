@@ -32,10 +32,18 @@ Route::middleware('auth')->group(function () {
         ->shallow()
         ->except(['index']);
 
-    // 問題もセクションと同じ形の URL にする(/sections/{section}/questions/create、/questions/{question})
+    // 問題もセクションと同じ形の URL にする(/sections/{section}/questions/create、/questions/{question})。
+    // 問題の一覧はセクション詳細が兼ねるので、index は作らない
+    Route::resource('sections.questions', QuestionController::class)
+        ->shallow()
+        ->except(['index']);
+
     // 回答。セクションの全問にまとめて回答する(requirements.md 6章の URL)
     Route::get('/sections/{section}/answers/create', [AnswerController::class, 'create'])->name('answers.create');
     Route::post('/sections/{section}/answers', [AnswerController::class, 'store'])->name('answers.store');
+
+    // 履歴一覧
+    Route::get('/sections/{section}/history', [HistoryController::class, 'index'])->name('history.index');
 
     // 結果画面 = 履歴詳細。scopeBindings で、URL のセクションと挑戦の組み合わせが正しいかを確かめる(食い違えば 404)
     Route::get('/sections/{section}/history/{attempt}', [HistoryController::class, 'show'])
@@ -47,11 +55,6 @@ Route::middleware('auth')->group(function () {
 
     // 失敗した挑戦の再採点
     Route::post('/attempts/{attempt}/regrade', [HistoryController::class, 'regrade'])->name('attempts.regrade');
-
-    // 問題の一覧はセクション詳細が兼ねるので、index は作らない
-    Route::resource('sections.questions', QuestionController::class)
-        ->shallow()
-        ->except(['index']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。

@@ -1,7 +1,7 @@
 {{--
     結果画面 = 履歴詳細(screens.md 2.10)。挑戦の状態で表示を切り替える。
     まだ置いていないもの:
-    - 平均点の前回比 → 6-3 / 「苦手だけ再挑戦」 → 6-5 / パンくずの「履歴」 → 6-2
+    - 平均点の前回比 → 6-3 / 「苦手だけ再挑戦」 → 6-5
 --}}
 @php
     use App\Enums\AttemptStatus;
@@ -14,6 +14,7 @@
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
     ['label' => $section->category->name, 'href' => route('categories.show', $section->category)],
     ['label' => $section->name, 'href' => route('sections.show', $section)],
+    ['label' => '履歴', 'href' => route('history.index', $section)],
     ['label' => $attempt->created_at->format('n/j H:i')],
 ]">
     {{-- 回答の送信に成功してこの画面に来たので、回答フォームの下書きを消す(architecture.md 7章)。

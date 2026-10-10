@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * 挑戦。「セクションの問題にまとめて回答した1回分」(requirements.md 3.3)。
@@ -55,6 +56,14 @@ class Attempt extends Model
     public function answers(): HasMany
     {
         return $this->hasMany(Answer::class)->orderBy('position');
+    }
+
+    /**
+     * 回答を通した採点結果。履歴一覧で、平均点を一覧の問い合わせの中でまとめて求める(withAvg)のに使う。
+     */
+    public function scores(): HasManyThrough
+    {
+        return $this->hasManyThrough(Score::class, Answer::class);
     }
 
     /**
