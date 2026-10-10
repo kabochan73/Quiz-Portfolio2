@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SectionRequest;
 use App\Models\Category;
 use App\Models\Section;
+use App\Queries\LatestScores;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -31,18 +32,21 @@ class SectionController extends Controller
 
     /**
      * セクション詳細(screens.md 2.6)。問題を作成順に、本文の抜粋で並べる。
-     * 回答・履歴の操作エリアはフェーズ5・6、問題ごとの最新点数は implementation-plan.md 6-4 で追加する。
+     * 問題ごとに最新の点数のバッジを出し、どの問題が苦手かをひと目で分かるようにする。
      */
-    public function show(Section $section): View
+    public function show(Section $section, LatestScores $latestScores): View
     {
         $section->load('category');
         $questions = $section->questions()->orderBy('id')->get();
+
+        // 問題ごとの最新の点数(点数バッジ用)。一度も採点されていない問題は含まれない
+        $scores = $latestScores->forQuestions($questions->pluck('id'));
         $maxQuestions = config('quiz.max_questions_per_section');
 
         // 削除の確認モーダルで「一緒に消える履歴の件数」を出すため
         $attemptCount = $section->attempts()->count();
 
-        return view('sections.show', compact('section', 'questions', 'maxQuestions', 'attemptCount'));
+        return view('sections.show', compact('section', 'questions', 'scores', 'maxQuestions', 'attemptCount'));
     }
 
     public function edit(Section $section): View

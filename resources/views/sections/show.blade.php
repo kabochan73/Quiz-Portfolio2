@@ -2,7 +2,6 @@
     セクション詳細(screens.md 2.6)。問題を1枚のカードに行として並べる。
     まだ置いていないもの(リンク先がないため):
     - 操作エリアの「苦手だけ再挑戦」「履歴を見る」 → implementation-plan.md 6-2 / 6-5
-    - 問題ごとの最新点数のバッジ → implementation-plan.md 6-4
 --}}
 <x-layouts.app :title="$section->name" :breadcrumbs="[
     ['label' => 'カテゴリ', 'href' => route('categories.index')],
@@ -61,6 +60,8 @@
                     class="flex min-h-11 items-center gap-3 px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-zinc-50 focus-visible:ring-3 focus-visible:ring-brand-200 focus-visible:outline-none lg:px-5">
                     <span class="w-5 shrink-0 text-right tabular-nums text-zinc-500">{{ $loop->iteration }}</span>
                     <span class="min-w-0 flex-1 truncate text-zinc-900">{{ $question->excerpt() }}</span>
+                    {{-- 最新の点数(screens.md 2.6)。一度も採点されていなければ「—」 --}}
+                    <x-ui.score-badge :score="$scores[$question->id] ?? null" />
                     <x-icon name="chevron-right" class="size-4 text-zinc-500" />
                 </a>
             @endforeach

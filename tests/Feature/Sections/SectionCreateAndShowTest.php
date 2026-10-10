@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Answer;
+use App\Models\Attempt;
 use App\Models\Category;
 use App\Models\Question;
+use App\Models\Score;
 use App\Models\Section;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -81,6 +84,21 @@ it('セクション詳細に、問題を作成順に番号と抜粋で表示し�
     expect($main)->toContain('TCPとUDPの違いを説明してください。')
         // 長い問題文は40文字で切って「…」を付ける
         ->toContain(mb_substr(str_repeat('長い問題文', 20), 0, 40).'…');
+});
+
+it('セクション詳細の問題の行に、最新の点数のバッジを出し、未採点の問題は「—」にする', function () {
+    $section = Section::factory()->create();
+    $graded = Question::factory()->for($section)->create();
+    Question::factory()->for($section)->create(); // 未採点
+    $attempt = Attempt::factory()->completed()->for($section)->create();
+    $answer = Answer::factory()->for($attempt)->for($graded)->create();
+    Score::factory()->for($answer)->create(['score' => 45]);
+
+    $main = Str::between($this->get(route('sections.show', $section))->getContent(), '<main', '</main>');
+
+    expect($main)->toContain('aria-label="45点"')
+        ->toContain('bg-rose-50')       // 60点未満は赤
+        ->toContain('aria-label="未採点"');
 });
 
 it('セクション詳細のパンくずは カテゴリ › カテゴリ名 › セクション名 になる', function () {
