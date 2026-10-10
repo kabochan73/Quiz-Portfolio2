@@ -43,3 +43,14 @@ it('前回比は増減に応じて記号・色・読み上げ用の文言が変�
     '同じ' => [70, '±0', '前回と同じ点数', 'text-zinc-500'],
     '前回なし' => [null, '初回', '初回の挑戦', 'text-zinc-500'],
 ]);
+
+it('前回比は小数の差も受け付け、小数第1位まで出す(整数になる差は整数で出す)', function (float $current, float $previous, string $text, string $label) {
+    $this->blade('<x-ui.score-delta :current="$current" :previous="$previous" />', ['current' => $current, 'previous' => $previous])
+        ->assertSee($text)
+        ->assertSee($label);
+})->with([
+    '小数の差' => [67.3, 60.0, '▲7.3', '前回より7.3点アップ'],
+    '誤差が出る引き算' => [72.0, 65.7, '▲6.3', '前回より6.3点アップ'],
+    '整数になる差' => [70.0, 54.0, '▲16', '前回より16点アップ'],
+    '小数の下がり' => [60.5, 62.0, '▼1.5', '前回より1.5点ダウン'],
+]);

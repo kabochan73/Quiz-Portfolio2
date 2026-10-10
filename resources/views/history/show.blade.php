@@ -1,7 +1,7 @@
 {{--
     結果画面 = 履歴詳細(screens.md 2.10)。挑戦の状態で表示を切り替える。
     まだ置いていないもの:
-    - 平均点の前回比 → 6-3 / 「苦手だけ再挑戦」 → 6-5
+    - 「苦手だけ再挑戦」 → 6-5
 --}}
 @php
     use App\Enums\AttemptStatus;
@@ -81,7 +81,13 @@
         <x-ui.card class="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="text-sm text-zinc-500">平均点</p>
-                <p class="text-4xl font-semibold tabular-nums text-zinc-900">{{ $attempt->averageScore() ?? '—' }}</p>
+                <p class="flex items-baseline gap-2">
+                    <span class="text-4xl font-semibold tabular-nums text-zinc-900">{{ $attempt->averageScore() ?? '—' }}</span>
+                    {{-- 同じ種別の、ひとつ前の挑戦の平均点との差 --}}
+                    @if ($attempt->averageScore() !== null)
+                        <x-ui.score-delta :current="$attempt->averageScore()" :previous="$previousAverage" />
+                    @endif
+                </p>
             </div>
             <dl class="space-y-0.5 text-right text-sm text-zinc-500">
                 <div><dt class="inline">80点以上</dt> <dd class="inline tabular-nums text-zinc-900">{{ $scores->filter(fn ($score) => $score >= 80)->count() }}問</dd></div>
@@ -95,7 +101,11 @@
 
         <div class="space-y-3">
             @foreach ($attempt->answers as $answer)
-                @include('history._answer-card', ['answer' => $answer, 'number' => $loop->iteration])
+                @include('history._answer-card', [
+                    'answer' => $answer,
+                    'number' => $loop->iteration,
+                    'previousScore' => $previousScores[$answer->question_id] ?? null,
+                ])
             @endforeach
         </div>
 
