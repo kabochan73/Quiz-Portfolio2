@@ -2,7 +2,6 @@
     セクション詳細(screens.md 2.6)。問題を1枚のカードに行として並べる。
     まだ置いていないもの(リンク先がないため):
     - 「+ 問題を追加」と、行から問題詳細へのリンク → implementation-plan.md 4-3
-    - 見出しの「…」メニュー(編集・削除) → implementation-plan.md 4-2 の続き
     - 「全問に回答する」「苦手だけ再挑戦」「履歴を見る」の操作エリア → フェーズ5・6
     - 問題ごとの最新点数のバッジ → implementation-plan.md 6-4
 --}}
@@ -13,7 +12,18 @@
 ]">
     <x-ui.page-header :title="$section->name">
         <x-slot:meta>{{ $questions->count() }} / {{ $maxQuestions }}問</x-slot:meta>
+        <x-slot:actions>
+            <x-ui.dropdown label="セクションの操作">
+                <x-ui.dropdown-item href="{{ route('sections.edit', $section) }}">編集</x-ui.dropdown-item>
+                <x-ui.dropdown-item danger x-on:click="$dispatch('open-modal', 'delete-section')">削除</x-ui.dropdown-item>
+            </x-ui.dropdown>
+        </x-slot:actions>
     </x-ui.page-header>
+
+    {{-- design-guide.md 7.6: 一緒に消えるデータの件数を明示する --}}
+    <x-ui.confirm-modal name="delete-section" title="セクションを削除しますか?" :action="route('sections.destroy', $section)">
+        「{{ $section->name }}」と、その中の問題{{ $questions->count() }}件・履歴{{ $attemptCount }}件もまとめて削除されます。この操作は取り消せません。
+    </x-ui.confirm-modal>
 
     <h2 class="mb-3 text-lg font-semibold text-zinc-900">問題</h2>
 

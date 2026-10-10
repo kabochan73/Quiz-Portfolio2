@@ -68,6 +68,9 @@ return [
         'section_id' => [
             'required' => 'セクションを選んでください。',
         ],
+        'category_id' => [
+            'required' => 'カテゴリを選んでください。',
+        ],
     ],
 
     /*

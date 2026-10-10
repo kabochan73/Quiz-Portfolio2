@@ -23,10 +23,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
 
     // セクションは必ずカテゴリに属するので、作成だけカテゴリ配下の URL にし(/categories/{category}/sections/create)、
-    // 詳細などはセクションの ID だけで決まる短い URL にする(/sections/{section})。shallow はこの形を作る指定
+    // 詳細などはセクションの ID だけで決まる短い URL にする(/sections/{section})。shallow はこの形を作る指定。
+    // セクションの一覧はカテゴリ詳細が兼ねるので、index は作らない
     Route::resource('categories.sections', SectionController::class)
         ->shallow()
-        ->only(['create', 'store', 'show']);
+        ->except(['index']);
 });
 
 // 共通コンポーネントの見本ページ(implementation-plan.md 2-6)。
