@@ -249,13 +249,15 @@ failed(Throwable $e):   ← 3回とも失敗したとき
 2回目(1回目で submit_grades が呼ばれなかったときだけ):
   messages    = 1回目の会話 + 1回目の応答
                 + 「採点結果を submit_grades で提出してください」
-  tool_choice = { type: tool, name: submit_grades }   ← 呼び出しを強制
-  → submit_grades の入力を取り出す
+  tool_choice = auto(同じ)
+  → submit_grades の入力を取り出す。それでも呼ばれなければ例外 → Job のリトライへ
 
 3. 結果を検証する(下記)
    → 不正なら例外を投げる → Job のリトライへ
 ```
 
+- **ツールの呼び出しは強制しない**(2026-10-10 変更)。Claude Sonnet 5.5 では `tool_choice` の `tool` / `any`(特定のツールを必ず呼ばせる指定)が 400 エラーになるため。
+  代わりに、`submit_grades` を `strict: true` にして引数がスキーマどおりになることを保証し、system プロンプトと2回目のメッセージで提出を明示的に指示する
 - 使用量(トークン数・検索回数)は、1回目と2回目を合計して保存する
 - モデル名は `config('services.anthropic.model')`(既定: `claude-sonnet-5-5`)
 - `max_tokens` は 8000。1回の API 呼び出しのタイムアウトは 100 秒(2回呼んでも Job の `$timeout` に収まるように)
